@@ -1,4 +1,4 @@
-﻿# Scripts that check the system log for event id 1074 "Last restarts of the system. 
+# Scripts that check the system log for event id 1074, 6008 and 6013 
 # Output file in c: root "LastReboot.txt"
 # 
 # Event ID Description
@@ -9,6 +9,6 @@
 #
 # 6013 The system uptime is number seconds 
 
-$Procs = Get-WinEvent -FilterHashtable @{logname = 'System'; id = 1074,6008} | Format-Table -wrap 
+$Procs = Get-WinEvent -FilterHashtable @{logname = 'System'; id = 1074,6008,6013} | Format-Table -wrap 
     Out-File -FilePath "C:\LastReboot.txt" -InputObject $Procs -Encoding ASCII -Width 300
         $Procs
