@@ -1,7 +1,7 @@
 ﻿#######################################################################################################
 #    Created by Awitac                                                                    ES 2021-06-13 
 # 
-#    Script will open the needed defafult ports for Unite PS
+#    Script will open the needed defafult inbound ports for Unite PS
 #
 #    NO GARANTIES! ALWAYS CONFIRM THE RULES AFTER RUNNING THE SCRIPT
 #
