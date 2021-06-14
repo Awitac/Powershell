@@ -19,6 +19,8 @@
 #           Unite TCP   10147   Unite IP-DECT
 #           Unite TCP   8044    Unite View Client
 #           Unite TCP   8045    Unite View API
+#           Unite TCP   10170   Unite module communication
+#           Unite TCP   1433    Default SQL communication
 #
 #    NO GARANTIES! ALWAYS CONFIRM THE RULES AFTER RUNNING THE SCRIPT
 #
