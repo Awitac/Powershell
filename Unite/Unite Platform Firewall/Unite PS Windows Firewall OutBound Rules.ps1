@@ -3,6 +3,25 @@
 # 
 #    Script will open the needed defafult Outbound ports for Unite PS
 #
+#       Following rules will be added
+#           Unite TCP   443     Unite trafic  
+#           Unite HTTP  8181    Healtcheck
+#           Unite TCP   10153   Device Manager
+#           Unite HTTP  7919    Device File download
+#           Unite UDP   3217    Unite UUS 
+#           Unite TCP   1321    Unite OAP v3
+#           Unite TCP   1322    Unite OAP 
+#           Unite TCP   33000   Unite VoWiFi
+#           Unite TCP   33001   Unite VoWiFi
+#           Unite TCP   33003   Ascom Myco WebSocket
+#           Unite TCP   33010   Unite IP-DECT WebSocket
+#           Unite TCP   1817    Unite IP-DECT
+#           Unite TCP   10147   Unite IP-DECT
+#           Unite TCP   8044    Unite View Client
+#           Unite TCP   8045    Unite View API
+#           Unite TCP   10170   Unite module communication
+#           Unite TCP   1433    Default SQL communication
+#
 #    NO GARANTIES! ALWAYS CONFIRM THE RULES AFTER RUNNING THE SCRIPT
 #
 #######################################################################################################
