@@ -1,7 +1,24 @@
 ﻿#######################################################################################################
-#    Created by Awitac                                                                    ES 2021-06-13 
+#       Created by Awitac                                                                 ES 2021-06-13 
 # 
-#    Script will open the needed defafult inbound ports for Unite PS
+#       Script will open the needed defafult inbound ports for Unite PS
+#    
+#       Following rules will be added
+#           Unite TCP   443     Unite trafic  
+#           Unite HTTP  8181    Healtcheck
+#           Unite TCP   10153   Device Manager
+#           Unite HTTP  7919    Device File download
+#           Unite UDP   3217    Unite UUS 
+#           Unite TCP   1321    Unite OAP v3
+#           Unite TCP   1322    Unite OAP 
+#           Unite TCP   33000   Unite VoWiFi
+#           Unite TCP   33001   Unite VoWiFi
+#           Unite TCP   33003   Ascom Myco WebSocket
+#           Unite TCP   33010   Unite IP-DECT WebSocket
+#           Unite TCP   1817    Unite IP-DECT
+#           Unite TCP   10147   Unite IP-DECT
+#           Unite TCP   8044    Unite View Client
+#           Unite TCP   8045    Unite View API
 #
 #    NO GARANTIES! ALWAYS CONFIRM THE RULES AFTER RUNNING THE SCRIPT
 #
@@ -190,7 +207,7 @@ New-NetFirewallRule `
 # Add Ascom Unite TCP 33010 Inbound 
 if (-not( Get-NetFirewallRule -DisplayName “Ascom Unite TCP 33010-Inbound” -ErrorAction SilentlyContinue)) { 
 $protocolName="Ascom Unite TCP 33010"
-$Description="Ascom Unite TCP 33010 P-DECT system and Unite over WebSocket"
+$Description="Ascom Unite TCP 33010 IP-DECT system and Unite over WebSocket"
 $protocol="TCP"
 $portNumbers='33010'
 $direction="Inbound"
