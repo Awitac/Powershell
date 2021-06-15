@@ -25,12 +25,6 @@
 #    Unite TCP   8044    Unite View Client
 #    Unite TCP   8045    Unite View API
 #
-# IP Ports between LDAP Server and Unite
-#    UNITE TCP	389     Unite LDAP
-#    UNITE TCP	636     Unite LDAP SSL
-#    UNITE TCP	3268	Unite LDAP Central phonebok
-#    UNITE TCP	3269	Unite LDAP Central phonebok SSL
-#
 # IP Ports for Device Management
 #    Unite TCP   10153   Device Manager
 #    Unite HTTP  7919    Device File download
@@ -238,78 +232,6 @@ $protocolName="Ascom Unite TCP 8045"
 $Description="Ascom Unite TCP 8045 Unite View Web API"
 $protocol="TCP"
 $portNumbers='8045'
-$direction="Inbound"
-$scopes='Domain', 'Public', 'Private'
-
-New-NetFirewallRule `
-    -DisplayName "$protocolName-$direction" `
-    -Description $Description `
-    -Direction $direction `
-    -Protocol $protocol `
-    -LocalPort $portNumbers `
-    -Profile $scopes `
-    -Action Allow }
-#
-# Add Ascom Unite LDAP TCP 389 Inbound 
-if (-not( Get-NetFirewallRule -DisplayName “Ascom Unite LDAP TCP 389-Inbound” -ErrorAction SilentlyContinue)) { 
-$protocolName="Ascom Unite LDAP TCP 389"
-$Description="Ascom Unite LDAP TCP 389"
-$protocol="TCP"
-$portNumbers='389'
-$direction="Inbound"
-$scopes='Domain', 'Public', 'Private'
-
-New-NetFirewallRule `
-    -DisplayName "$protocolName-$direction" `
-    -Description $Description `
-    -Direction $direction `
-    -Protocol $protocol `
-    -LocalPort $portNumbers `
-    -Profile $scopes `
-    -Action Allow }
-#
-# Add Ascom Unite LDAP SSL 636 Inbound 
-if (-not( Get-NetFirewallRule -DisplayName “Ascom Unite LDAP SSL 636-Inbound” -ErrorAction SilentlyContinue)) { 
-$protocolName="Ascom Unite LDAP SSL 636"
-$Description="Ascom Unite LDAP SSL 636"
-$protocol="TCP"
-$portNumbers='636'
-$direction="Inbound"
-$scopes='Domain', 'Public', 'Private'
-
-New-NetFirewallRule `
-    -DisplayName "$protocolName-$direction" `
-    -Description $Description `
-    -Direction $direction `
-    -Protocol $protocol `
-    -LocalPort $portNumbers `
-    -Profile $scopes `
-    -Action Allow }
-#
-# Add Ascom Unite LDAP Central phonebok 3268 Inbound 
-if (-not( Get-NetFirewallRule -DisplayName “Ascom Unite LDAP Central phonebok 3268-Inbound” -ErrorAction SilentlyContinue)) { 
-$protocolName="Ascom Unite LDAP Central phonebok 3268"
-$Description="Ascom Unite LDAP Central phonebok 3268"
-$protocol="TCP"
-$portNumbers='3268'
-$direction="Inbound"
-$scopes='Domain', 'Public', 'Private'
-
-New-NetFirewallRule `
-    -DisplayName "$protocolName-$direction" `
-    -Description $Description `
-    -Direction $direction `
-    -Protocol $protocol `
-    -LocalPort $portNumbers `
-    -Profile $scopes `
-    -Action Allow }
-#
-# Add Ascom Unite LDAP Central phonebok SSL 3269 Inbound 
-if (-not( Get-NetFirewallRule -DisplayName “Ascom Unite LDAP Central phonebok SSL 3269-Inbound” -ErrorAction SilentlyContinue)) { 
-$protocolName="Ascom Unite LDAP Central phonebok SSL 3269"
-$Description="Ascom Unite LDAP Central phonebok SSL 3269"
-$protocol="TCP"
-$portNumbers='3269'
 $direction="Inbound"
 $scopes='Domain', 'Public', 'Private'
 
