@@ -4,8 +4,8 @@
 #       Script will open the needed defafult inbound ports for Unite PS
 #    
 #       Following rules will be added
-#           Unite TCP   443     Unite trafic  
-#           Unite HTTP  8181    Healtcheck
+#           Unite TCP   443     Unite Web traffic (https)
+#           Unite HTTP  8181    Unite Supervisor Web interface (http)
 #           Unite TCP   10153   Device Manager
 #           Unite HTTP  7919    Device File download
 #           Unite UDP   3217    Unite UUS 
