@@ -46,6 +46,7 @@
 #
 #######################################################################################################
 #
+#
 # Add Ascom Unite HTTPS 443 Inbound 
 if (-not( Get-NetFirewallRule -DisplayName “Ascom Unite HTTPS 443-Inbound” -ErrorAction SilentlyContinue)) { 
 $protocolName="Ascom Unite HTTPS 443"
@@ -63,6 +64,7 @@ New-NetFirewallRule `
     -LocalPort $portNumbers `
     -Profile $scopes `
     -Action Allow }
+#
 #
 # Add Ascom Unite TCP 10170 Inbound 
 if (-not( Get-NetFirewallRule -DisplayName “Ascom Unite TCP 10170-Inbound” -ErrorAction SilentlyContinue)) { 
@@ -82,6 +84,7 @@ New-NetFirewallRule `
     -Profile $scopes `
     -Action Allow }
 #
+#
 # Add Ascom Unite TCP 33000 Inbound 
 if (-not( Get-NetFirewallRule -DisplayName “Ascom Unite TCP 33000-Inbound” -ErrorAction SilentlyContinue)) { 
 $protocolName="Ascom Unite TCP 33000"
@@ -99,6 +102,7 @@ New-NetFirewallRule `
     -LocalPort $portNumbers `
     -Profile $scopes `
     -Action Allow }
+#
 #
 # Add Ascom Unite TCP 33001 Inbound 
 if (-not( Get-NetFirewallRule -DisplayName “Ascom Unite TCP 33001-Inbound” -ErrorAction SilentlyContinue)) { 
@@ -118,6 +122,7 @@ New-NetFirewallRule `
     -Profile $scopes `
     -Action Allow }
 #
+#
 # Add Ascom Unite TCP 33010 Inbound 
 if (-not( Get-NetFirewallRule -DisplayName “Ascom Unite TCP 33010-Inbound” -ErrorAction SilentlyContinue)) { 
 $protocolName="Ascom Unite TCP 33010"
@@ -135,6 +140,7 @@ New-NetFirewallRule `
     -LocalPort $portNumbers `
     -Profile $scopes `
     -Action Allow }
+#
 #
 # Add Ascom Unite TCP 1817 Inbound 
 if (-not( Get-NetFirewallRule -DisplayName “Ascom Unite TCP 1817-Inbound” -ErrorAction SilentlyContinue)) { 
@@ -154,6 +160,7 @@ New-NetFirewallRule `
     -Profile $scopes `
     -Action Allow }
 #
+#
 # Add Ascom Unite TCP 10147 Inbound 
 if (-not( Get-NetFirewallRule -DisplayName “Ascom Unite TCP 10147-Inbound” -ErrorAction SilentlyContinue)) { 
 $protocolName="Ascom Unite TCP 10147"
@@ -171,6 +178,7 @@ New-NetFirewallRule `
     -LocalPort $portNumbers `
     -Profile $scopes `
     -Action Allow }
+#
 #
 # Add Ascom Unite TCP 33010 Inbound 
 if (-not( Get-NetFirewallRule -DisplayName “Ascom Unite IP-DECT 33010-Inbound” -ErrorAction SilentlyContinue)) { 
@@ -190,6 +198,7 @@ New-NetFirewallRule `
     -Profile $scopes `
     -Action Allow }
 #
+#
 # Add Ascom Unite TCP 33003 Inbound 
 if (-not( Get-NetFirewallRule -DisplayName “Ascom Unite TCP 33003-Inbound” -ErrorAction SilentlyContinue)) { 
 $protocolName="Ascom Unite TCP 33003"
@@ -207,6 +216,7 @@ New-NetFirewallRule `
     -LocalPort $portNumbers `
     -Profile $scopes `
     -Action Allow }
+#
 #
 # Add Ascom Unite TCP 8044 Inbound 
 if (-not( Get-NetFirewallRule -DisplayName “Ascom Unite TCP 8044-Inbound” -ErrorAction SilentlyContinue)) { 
@@ -226,6 +236,7 @@ New-NetFirewallRule `
     -Profile $scopes `
     -Action Allow }
 #
+#
 # Add Ascom Unite TCP 8045 Inbound 
 if (-not( Get-NetFirewallRule -DisplayName “Ascom Unite TCP 8045-Inbound” -ErrorAction SilentlyContinue)) { 
 $protocolName="Ascom Unite TCP 8045"
@@ -243,6 +254,7 @@ New-NetFirewallRule `
     -LocalPort $portNumbers `
     -Profile $scopes `
     -Action Allow }
+#
 #
 # Add Ascom Unite TCP 10153 Inbound 
 if (-not( Get-NetFirewallRule -DisplayName “Ascom Unite TCP 10153-Inbound” -ErrorAction SilentlyContinue)) { 
@@ -262,6 +274,7 @@ New-NetFirewallRule `
     -Profile $scopes `
     -Action Allow }
 #
+#
 # Add Ascom Unite HTTP 7919 Inbound 
 if (-not( Get-NetFirewallRule -DisplayName “Ascom Unite TCP 7919-Inbound” -ErrorAction SilentlyContinue)) { 
 $protocolName="Ascom Unite TCP 7919"
@@ -279,6 +292,7 @@ New-NetFirewallRule `
     -LocalPort $portNumbers `
     -Profile $scopes `
     -Action Allow }
+#
 #
 # Add Ascom Unite TCP 10146 Inbound 
 if (-not( Get-NetFirewallRule -DisplayName “Ascom Unite TCP 10146-Inbound” -ErrorAction SilentlyContinue)) { 
@@ -298,6 +312,7 @@ New-NetFirewallRule `
     -Profile $scopes `
     -Action Allow }
 #
+#
 # Add Ascom Unite TCP 10147 Inbound 
 if (-not( Get-NetFirewallRule -DisplayName “Ascom Unite TCP 10147-Inbound” -ErrorAction SilentlyContinue)) {
 $protocolName="Ascom Unite TCP 10147"
@@ -315,6 +330,7 @@ New-NetFirewallRule `
     -LocalPort $portNumbers `
     -Profile $scopes `
     -Action Allow }
+#
 #
 # Add Ascom Unite TCP 10176 Inbound 
 if (-not( Get-NetFirewallRule -DisplayName “Ascom Unite TCP 10176-Inbound” -ErrorAction SilentlyContinue)) { 
@@ -334,6 +350,7 @@ New-NetFirewallRule `
     -Profile $scopes `
     -Action Allow }
 #
+#
 # Add Ascom Unite TCP 10217 Inbound 
 if (-not( Get-NetFirewallRule -DisplayName “Ascom Unite TCP 10217-Inbound” -ErrorAction SilentlyContinue)) { 
 $protocolName="Ascom Unite TCP 10217"
@@ -351,6 +368,7 @@ New-NetFirewallRule `
     -LocalPort $portNumbers `
     -Profile $scopes `
     -Action Allow }
+#
 #
 # Add Ascom Unite TCP 1321 Inbound 
 if (-not( Get-NetFirewallRule -DisplayName “Ascom Unite TCP 1321-Inbound” -ErrorAction SilentlyContinue)) { 
@@ -370,6 +388,7 @@ New-NetFirewallRule `
     -Profile $scopes `
     -Action Allow }
 #
+#
 # Add Ascom Unite TCP 1322 Inbound 
 if (-not( Get-NetFirewallRule -DisplayName “Ascom Unite TCP 1322-Inbound” -ErrorAction SilentlyContinue)) { 
 $protocolName="Ascom Unite TCP 1322"
@@ -387,6 +406,7 @@ New-NetFirewallRule `
     -LocalPort $portNumbers `
     -Profile $scopes `
     -Action Allow }
+#
 #
 # Add Ascom Unite UDP 3217 Inbound 
 if (-not( Get-NetFirewallRule -DisplayName “Ascom Unite UDP 3217-Inbound” -ErrorAction SilentlyContinue)) { 
@@ -406,6 +426,7 @@ New-NetFirewallRule `
     -Profile $scopes `
     -Action Allow }
 #
+#
 # Add Ascom Unite HTTP 8181 Inbound 
 if (-not( Get-NetFirewallRule -DisplayName “Ascom Unite HTTP 8181-Inbound” -ErrorAction SilentlyContinue)) { 
 $protocolName="Ascom Unite HTTP 8181"
@@ -423,6 +444,7 @@ New-NetFirewallRule `
     -LocalPort $portNumbers `
     -Profile $scopes `
     -Action Allow }
+#
 #
 # Add Ascom Unite TCP 1433 Inbound 
 if (-not( Get-NetFirewallRule -DisplayName “Ascom Unite TCP 1433-Inbound” -ErrorAction SilentlyContinue)) { 
