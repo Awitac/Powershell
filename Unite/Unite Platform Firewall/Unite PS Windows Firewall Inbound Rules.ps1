@@ -1,54 +1,54 @@
-#       Changes                                                                         ES 2021-06-13 
-#       Changes                                                                         ES 2021-06-15 
+#  Changes                                                                         ES 2021-06-13 
+#  Changes                                                                         ES 2021-06-15 
 # 
-#       Script will open the inbound ports for Unite PS
+#  Script will open the inbound ports for Unite PS
 #    
-#       IP Ports between Unite Admin and Elise3 modules
-#           Unite TCP   443     Unite Web traffic (https)
-#           Unite TCP   10170   Unite module communication
+# IP Ports between Unite Admin and Elise3 modules
+#    Unite TCP   443     Unite Web traffic (https)
+#    Unite TCP   10170   Unite module communication
 #
-# 		IP Ports between VoWiFi System and Unite
-#           Unite TCP   33000   Unite VoWiFi
-#           Unite TCP   33001   Unite VoWiFi
-#           Unite TCP   33010   Unite VoWiFi WebSocket
+# IP Ports between VoWiFi System and Unite
+#    Unite TCP   33000   Unite VoWiFi
+#    Unite TCP   33001   Unite VoWiFi
+#    Unite TCP   33010   Unite VoWiFi WebSocket
 #
-#		IP Ports between DECT System and Unite
-#			Unite TCP   1817    Unite IP-DECT (encrypted)
-#           Unite TCP   10146   Unite IP-DECT Messaging (encrypted)
-#           Unite TCP   10147   Unite IP-DECT Messaging (encrypted)
-#			Unite TCP   33010   Unite IP-DECT WebSocket
+# IP Ports between DECT System and Unite
+#	Unite TCP   1817    Unite IP-DECT (encrypted)
+#   Unite TCP   10146   Unite IP-DECT Messaging (encrypted)
+#   Unite TCP   10147   Unite IP-DECT Messaging (encrypted)
+#	Unite TCP   33010   Unite IP-DECT WebSocket
 #           
-#		IP Ports between Ascom Myco and Unite
-#           Unite TCP   33003   Ascom Myco WebSocket
+# IP Ports between Ascom Myco and Unite
+#    Unite TCP   33003   Ascom Myco WebSocket
 #
-#		IP Ports for Unite View Services
-#           Unite TCP   8044    Unite View Client
-#           Unite TCP   8045    Unite View API
+# IP Ports for Unite View Services
+#    Unite TCP   8044    Unite View Client
+#    Unite TCP   8045    Unite View API
 #
-#		IP Ports between LDAP Server and Unite
-#			UNITE TCP	389		Unite LDAP
-#			UNITE TCP	636		Unite LDAP SSL
-#			UNITE TCP	3268	Unite LDAP Central phonebok
-#			UNITE TCP	3269	Unite LDAP Central phonebok SSL
+# IP Ports between LDAP Server and Unite
+#	 UNITE TCP	389		Unite LDAP
+#	 UNITE TCP	636		Unite LDAP SSL
+#	 UNITE TCP	3268	Unite LDAP Central phonebok
+#	 UNITE TCP	3269	Unite LDAP Central phonebok SSL
 #
-#		IP Ports for Device Management
-#			Unite TCP   10153   Device Manager
-#           Unite HTTP  7919    Device File download
-#			Unite TCP   10176   Logon (IPBS)/IP DECT Gateway (IPBL) to Device Manager
-#           Unite HTTP  10217   Logon Ascom Myco DECT to DeviceManager
+# IP Ports for Device Management
+#	 Unite TCP   10153   Device Manager
+#    Unite HTTP  7919    Device File download
+#	 Unite TCP   10176   Logon (IPBS)/IP DECT Gateway (IPBL) to Device Manager
+#    Unite HTTP  10217   Logon Ascom Myco DECT to DeviceManager
 #
-#		IP Ports for OAP
-#           Unite TCP   1321    Unite OAP v3
-#           Unite TCP   1322    Unite OAP
+# IP Ports for OAP
+#    Unite TCP   1321    Unite OAP v3
+#    Unite TCP   1322    Unite OAP
 #
-#		IP Ports for Unite AM/Unite PS
-#           Unite UDP   3217    Unite UUS
-#			Unite HTTP  8181    Unite Supervisor Web interface (http)
+# IP Ports for Unite AM/Unite PS
+#    Unite UDP   3217    Unite UUS
+#	 Unite HTTP  8181    Unite Supervisor Web interface (http)
 #           
-#		IP Ports for SQL
-#           Unite TCP   1433    Default SQL communication
+# IP Ports for SQL
+#    Unite TCP   1433    Default SQL communication
 #
-#    NO GARANTIES! ALWAYS CONFIRM THE RULES AFTER RUNNING THE SCRIPT
+#            NO GARANTIES! ALWAYS CONFIRM THE RULES AFTER RUNNING THE SCRIPT
 #
 #######################################################################################################
 #
