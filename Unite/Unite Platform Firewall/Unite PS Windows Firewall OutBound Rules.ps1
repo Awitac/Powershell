@@ -1,30 +1,35 @@
-﻿#######################################################################################################
-#    Created by Awitac                                                                    ES 2021-06-14 
+#  Changes                                                                         ES 2021-06-13 
+#  Changes                                                                         ES 2021-06-15 
 # 
-#    Script will open the needed defafult Outbound ports for Unite PS
+#  Script will open the Outbound ports for Unite PS
+#    
+# IP Ports between Unite Admin and Elise3 modules
+#    Unite TCP   443    Unite Web traffic (https)
+#    Unite TCP   10170  Unite module communication
 #
-#       Following rules will be added
-#           Unite TCP   443     Unite trafic  
-#           Unite HTTP  8181    Healtcheck
-#           Unite TCP   10153   Device Manager
-#           Unite HTTP  7919    Device File download
-#           Unite UDP   3217    Unite UUS 
-#           Unite TCP   1321    Unite OAP v3
-#           Unite TCP   1322    Unite OAP 
-#           Unite TCP   33000   Unite VoWiFi
-#           Unite TCP   33001   Unite VoWiFi
-#           Unite TCP   33003   Ascom Myco WebSocket
-#           Unite TCP   33010   Unite IP-DECT WebSocket
-#           Unite TCP   1817    Unite IP-DECT
-#           Unite TCP   10147   Unite IP-DECT
-#           Unite TCP   8044    Unite View Client
-#           Unite TCP   8045    Unite View API
-#           Unite TCP   10170   Unite module communication
-#           Unite TCP   1433    Default SQL communication
+# IP Ports between VoWiFi System and Unite
+#    Unite TCP   33000  Unite VoWiFi
+#    Unite TCP   33010  Unite VoWiFi WebSocket
 #
-#    NO GARANTIES! ALWAYS CONFIRM THE RULES AFTER RUNNING THE SCRIPT
+# IP Ports between DECT System and Unite
+#    Unite TCP   12346  Unite IP-DECT Messaging between IP-DECT system and Unite module
+#    Unite TCP   33010  Unite IP-DECT WebSocket
+#           
+# IP Ports between LDAP Server and Unite
+#    UNITE TCP	 389    Unite LDAP
+#    UNITE TCP	 636    Unite LDAP SSL
+#    UNITE TCP	 3268	Unite LDAP Central phonebok
+#    UNITE TCP	 3269	Unite LDAP Central phonebok SSL
+#
+# IP Ports for Unite AM/Unite PS
+#    Unite UDP   3217   Unite UUS
+#    Unite HTTP  8181   Unite Supervisor Web interface (http)
+#           
+#
+#            NO GARANTIES! ALWAYS CONFIRM THE RULES AFTER RUNNING THE SCRIPT
 #
 #######################################################################################################
+#
 #
 # Add Ascom Unite HTTPS 443 Outbound 
 if (-not( Get-NetFirewallRule -DisplayName “Ascom Unite HTTPS 443-Outbound” -ErrorAction SilentlyContinue)) { 
@@ -44,257 +49,6 @@ New-NetFirewallRule `
     -Profile $scopes `
     -Action Allow }
 #
-# Add Ascom Unite HTTP 8181 Outbound 
-if (-not( Get-NetFirewallRule -DisplayName “Ascom Unite HTTP 8181-Outbound” -ErrorAction SilentlyContinue)) { 
-$protocolName="Ascom Unite HTTP 8181"
-$Description="Ascom Unite HTTPS 8181"
-$protocol="TCP"
-$portNumbers='8181'
-$direction="Outbound"
-$scopes='Domain', 'Public', 'Private'
-
-New-NetFirewallRule `
-    -DisplayName "$protocolName-$direction" `
-    -Description $Description `
-    -Direction $direction `
-    -Protocol $protocol `
-    -LocalPort $portNumbers `
-    -Profile $scopes `
-    -Action Allow }
-#
-# Add Ascom Unite TCP 10153 Outbound 
-if (-not( Get-NetFirewallRule -DisplayName “Ascom Unite TCP 10153-Outbound” -ErrorAction SilentlyContinue)) { 
-$protocolName="Ascom Unite TCP 10153"
-$Description="Ascom Unite TCP 10153 Device Manager"
-$protocol="TCP"
-$portNumbers='10153'
-$direction="Outbound"
-$scopes='Domain', 'Public', 'Private'
-
-New-NetFirewallRule `
-    -DisplayName "$protocolName-$direction" `
-    -Description $Description `
-    -Direction $direction `
-    -Protocol $protocol `
-    -LocalPort $portNumbers `
-    -Profile $scopes `
-    -Action Allow }
-#
-# Add Ascom Unite HTTP 7919 Outbound 
-if (-not( Get-NetFirewallRule -DisplayName “Ascom Unite TCP 7919-Outbound” -ErrorAction SilentlyContinue)) { 
-$protocolName="Ascom Unite TCP 7919"
-$Description="Ascom Unite File download to devices over HTTP"
-$protocol="TCP"
-$portNumbers='7919'
-$direction="Outbound"
-$scopes='Domain', 'Public', 'Private'
-
-New-NetFirewallRule `
-    -DisplayName "$protocolName-$direction" `
-    -Description $Description `
-    -Direction $direction `
-    -Protocol $protocol `
-    -LocalPort $portNumbers `
-    -Profile $scopes `
-    -Action Allow }
-#
-# Add Ascom Unite UDP 3217 Outbound 
-if (-not( Get-NetFirewallRule -DisplayName “Ascom Unite UDP 3217-Outbound” -ErrorAction SilentlyContinue)) { 
-$protocolName="Ascom Unite UDP 3217"
-$Description="Ascom Unite UDP 3217 UUS"
-$protocol="UDP"
-$portNumbers='3217'
-$direction="Outbound"
-$scopes='Domain', 'Public', 'Private'
-
-New-NetFirewallRule `
-    -DisplayName "$protocolName-$direction" `
-    -Description $Description `
-    -Direction $direction `
-    -Protocol $protocol `
-    -LocalPort $portNumbers `
-    -Profile $scopes `
-    -Action Allow }
-#
-# Add Ascom Unite TCP 1321 Outbound 
-if (-not( Get-NetFirewallRule -DisplayName “Ascom Unite TCP 1321-Outbound” -ErrorAction SilentlyContinue)) { 
-$protocolName="Ascom Unite TCP 1321"
-$Description="Ascom Unite TCP 1321 OAP v3"
-$protocol="TCP"
-$portNumbers='1321'
-$direction="Outbound"
-$scopes='Domain', 'Public', 'Private'
-
-New-NetFirewallRule `
-    -DisplayName "$protocolName-$direction" `
-    -Description $Description `
-    -Direction $direction `
-    -Protocol $protocol `
-    -LocalPort $portNumbers `
-    -Profile $scopes `
-    -Action Allow }
-#
-# Add Ascom Unite TCP 1322 Outbound 
-if (-not( Get-NetFirewallRule -DisplayName “Ascom Unite TCP 1322-Outbound” -ErrorAction SilentlyContinue)) { 
-$protocolName="Ascom Unite TCP 1322"
-$Description="Ascom Unite TCP 1322 OAP"
-$protocol="TCP"
-$portNumbers='1322'
-$direction="Outbound"
-$scopes='Domain', 'Public', 'Private'
-
-New-NetFirewallRule `
-    -DisplayName "$protocolName-$direction" `
-    -Description $Description `
-    -Direction $direction `
-    -Protocol $protocol `
-    -LocalPort $portNumbers `
-    -Profile $scopes `
-    -Action Allow }
-#
-# Add Ascom Unite TCP 33000 Outbound 
-if (-not( Get-NetFirewallRule -DisplayName “Ascom Unite TCP 33000-Outbound” -ErrorAction SilentlyContinue)) { 
-$protocolName="Ascom Unite TCP 33000"
-$Description="Ascom Unite TCP 33000 VoWiFi device"
-$protocol="TCP"
-$portNumbers='33000'
-$direction="Outbound"
-$scopes='Domain', 'Public', 'Private'
-
-New-NetFirewallRule `
-    -DisplayName "$protocolName-$direction" `
-    -Description $Description `
-    -Direction $direction `
-    -Protocol $protocol `
-    -LocalPort $portNumbers `
-    -Profile $scopes `
-    -Action Allow }
-#
-# Add Ascom Unite TCP 33001 Outbound 
-if (-not( Get-NetFirewallRule -DisplayName “Ascom Unite TCP 33001-Outbound” -ErrorAction SilentlyContinue)) { 
-$protocolName="Ascom Unite TCP 33001"
-$Description="Ascom Unite TCP 33001 VoWiFi device"
-$protocol="TCP"
-$portNumbers='33001'
-$direction="Outbound"
-$scopes='Domain', 'Public', 'Private'
-
-New-NetFirewallRule `
-    -DisplayName "$protocolName-$direction" `
-    -Description $Description `
-    -Direction $direction `
-    -Protocol $protocol `
-    -LocalPort $portNumbers `
-    -Profile $scopes `
-    -Action Allow }
-#
-# Add Ascom Unite TCP 33003 Outbound 
-if (-not( Get-NetFirewallRule -DisplayName “Ascom Unite TCP 33003-Outbound” -ErrorAction SilentlyContinue)) { 
-$protocolName="Ascom Unite TCP 33003"
-$Description="Ascom Unite TCP 33003 Ascom Myco over WebSocket"
-$protocol="TCP"
-$portNumbers='33003'
-$direction="Outbound"
-$scopes='Domain', 'Public', 'Private'
-
-New-NetFirewallRule `
-    -DisplayName "$protocolName-$direction" `
-    -Description $Description `
-    -Direction $direction `
-    -Protocol $protocol `
-    -LocalPort $portNumbers `
-    -Profile $scopes `
-    -Action Allow }
-#
-# Add Ascom Unite TCP 33010 Outbound 
-if (-not( Get-NetFirewallRule -DisplayName “Ascom Unite TCP 33010-Outbound” -ErrorAction SilentlyContinue)) { 
-$protocolName="Ascom Unite TCP 33010"
-$Description="Ascom Unite TCP 33010 P-DECT system and Unite over WebSocket"
-$protocol="TCP"
-$portNumbers='33010'
-$direction="Outbound"
-$scopes='Domain', 'Public', 'Private'
-
-New-NetFirewallRule `
-    -DisplayName "$protocolName-$direction" `
-    -Description $Description `
-    -Direction $direction `
-    -Protocol $protocol `
-    -LocalPort $portNumbers `
-    -Profile $scopes `
-    -Action Allow }
-#
-# Add Ascom Unite TCP 1817 Outbound 
-if (-not( Get-NetFirewallRule -DisplayName “Ascom Unite TCP 1817-Outbound” -ErrorAction SilentlyContinue)) { 
-$protocolName="Ascom Unite TCP 1817"
-$Description="Ascom Unite TCP 1817 IP-DECT"
-$protocol="TCP"
-$portNumbers='1817'
-$direction="Outbound"
-$scopes='Domain', 'Public', 'Private'
-
-New-NetFirewallRule `
-    -DisplayName "$protocolName-$direction" `
-    -Description $Description `
-    -Direction $direction `
-    -Protocol $protocol `
-    -LocalPort $portNumbers `
-    -Profile $scopes `
-    -Action Allow }
-#
-# Add Ascom Unite TCP 10147 Outbound 
-if (-not( Get-NetFirewallRule -DisplayName “Ascom Unite TCP 10147-Outbound” -ErrorAction SilentlyContinue)) { 
-$protocolName="Ascom Unite TCP 10147"
-$Description="Ascom Unite TCP 10147 IP-DECT"
-$protocol="TCP"
-$portNumbers='10147'
-$direction="Outbound"
-$scopes='Domain', 'Public', 'Private'
-
-New-NetFirewallRule `
-    -DisplayName "$protocolName-$direction" `
-    -Description $Description `
-    -Direction $direction `
-    -Protocol $protocol `
-    -LocalPort $portNumbers `
-    -Profile $scopes `
-    -Action Allow }
-#
-# Add Ascom Unite TCP 8044 Outbound 
-if (-not( Get-NetFirewallRule -DisplayName “Ascom Unite TCP 8044-Outbound” -ErrorAction SilentlyContinue)) { 
-$protocolName="Ascom Unite TCP 8044"
-$Description="Ascom Unite TCP 8044 Unite View client"
-$protocol="TCP"
-$portNumbers='8044'
-$direction="Outbound"
-$scopes='Domain', 'Public', 'Private'
-
-New-NetFirewallRule `
-    -DisplayName "$protocolName-$direction" `
-    -Description $Description `
-    -Direction $direction `
-    -Protocol $protocol `
-    -LocalPort $portNumbers `
-    -Profile $scopes `
-    -Action Allow }
-#
-# Add Ascom Unite TCP 8045 Outbound 
-if (-not( Get-NetFirewallRule -DisplayName “Ascom Unite TCP 8045-Outbound” -ErrorAction SilentlyContinue)) { 
-$protocolName="Ascom Unite TCP 8045"
-$Description="Ascom Unite TCP 8045 Unite View Web API"
-$protocol="TCP"
-$portNumbers='8045'
-$direction="Outbound"
-$scopes='Domain', 'Public', 'Private'
-
-New-NetFirewallRule `
-    -DisplayName "$protocolName-$direction" `
-    -Description $Description `
-    -Direction $direction `
-    -Protocol $protocol `
-    -LocalPort $portNumbers `
-    -Profile $scopes `
-    -Action Allow }
 #
 # Add Ascom Unite TCP 10170 Outbound 
 if (-not( Get-NetFirewallRule -DisplayName “Ascom Unite TCP 10170-Outbound” -ErrorAction SilentlyContinue)) { 
@@ -314,12 +68,13 @@ New-NetFirewallRule `
     -Profile $scopes `
     -Action Allow }
 #
-# Add Ascom Unite TCP 1433 Outbound 
-if (-not( Get-NetFirewallRule -DisplayName “Ascom Unite TCP 1433-Outbound” -ErrorAction SilentlyContinue)) { 
-$protocolName="Ascom Unite TCP 1433"
-$Description="Ascom Unite TCP 1433 SQL communication"
+#
+# Add Ascom Unite TCP 33000 Outbound 
+if (-not( Get-NetFirewallRule -DisplayName “Ascom Unite VoWiFi TCP 33000-Outbound” -ErrorAction SilentlyContinue)) { 
+$protocolName="Ascom Unite VoWiFi TCP 33000"
+$Description="Ascom Unite TCP 33000 VoWiFi device"
 $protocol="TCP"
-$portNumbers='1433'
+$portNumbers='33000'
 $direction="Outbound"
 $scopes='Domain', 'Public', 'Private'
 
@@ -331,3 +86,173 @@ New-NetFirewallRule `
     -LocalPort $portNumbers `
     -Profile $scopes `
     -Action Allow }
+#
+#
+# Add Ascom Unite VoWiFi TCP 33010 Outbound 
+if (-not( Get-NetFirewallRule -DisplayName “Ascom Unite VoWiFi 33010-Outbound” -ErrorAction SilentlyContinue)) { 
+$protocolName="Ascom Unite VoWiFi 33010"
+$Description="Ascom Unite TCP 33010 VoWiFi WebSocket"
+$protocol="TCP"
+$portNumbers='33010'
+$direction="Outbound"
+$scopes='Domain', 'Public', 'Private'
+
+New-NetFirewallRule `
+    -DisplayName "$protocolName-$direction" `
+    -Description $Description `
+    -Direction $direction `
+    -Protocol $protocol `
+    -LocalPort $portNumbers `
+    -Profile $scopes `
+    -Action Allow }
+#
+#
+# Add Ascom Unite TCP 12346 Outbound 
+if (-not( Get-NetFirewallRule -DisplayName “Ascom Unite IP-DECT 12346-Outbound” -ErrorAction SilentlyContinue)) { 
+$protocolName="Ascom Unite IP-DECT 12346"
+$Description="Ascom Unite TCP 12346 Unite IP-DECT Messaging between IP-DECT system and Unite module"
+$protocol="TCP"
+$portNumbers='1817'
+$direction="Outbound"
+$scopes='Domain', 'Public', 'Private'
+
+New-NetFirewallRule `
+    -DisplayName "$protocolName-$direction" `
+    -Description $Description `
+    -Direction $direction `
+    -Protocol $protocol `
+    -LocalPort $portNumbers `
+    -Profile $scopes `
+    -Action Allow }
+#
+#
+# Add Ascom Unite TCP 33010 Outbound 
+if (-not( Get-NetFirewallRule -DisplayName “Ascom Unite DECT 33010-Outbound” -ErrorAction SilentlyContinue)) { 
+$protocolName="Ascom Unite DECT 33010"
+$Description="Ascom Unite DECT 33010 P-DECT system and Unite over WebSocket"
+$protocol="TCP"
+$portNumbers='33010'
+$direction="Outbound"
+$scopes='Domain', 'Public', 'Private'
+
+New-NetFirewallRule `
+    -DisplayName "$protocolName-$direction" `
+    -Description $Description `
+    -Direction $direction `
+    -Protocol $protocol `
+    -LocalPort $portNumbers `
+    -Profile $scopes `
+    -Action Allow }
+#
+#
+#
+# Add Ascom Unite LDAP TCP 389 Outbound 
+if (-not( Get-NetFirewallRule -DisplayName “Ascom Unite LDAP TCP 389-Outbound” -ErrorAction SilentlyContinue)) { 
+$protocolName="Ascom Unite LDAP TCP 389"
+$Description="Ascom Unite LDAP TCP 389"
+$protocol="TCP"
+$portNumbers='389'
+$direction="Outbound"
+$scopes='Domain', 'Public', 'Private'
+
+New-NetFirewallRule `
+    -DisplayName "$protocolName-$direction" `
+    -Description $Description `
+    -Direction $direction `
+    -Protocol $protocol `
+    -LocalPort $portNumbers `
+    -Profile $scopes `
+    -Action Allow }
+#
+# Add Ascom Unite LDAP SSL 636 Outbound 
+if (-not( Get-NetFirewallRule -DisplayName “Ascom Unite LDAP SSL 636-Outbound” -ErrorAction SilentlyContinue)) { 
+$protocolName="Ascom Unite LDAP SSL 636"
+$Description="Ascom Unite LDAP SSL 636"
+$protocol="TCP"
+$portNumbers='636'
+$direction="Outbound"
+$scopes='Domain', 'Public', 'Private'
+
+New-NetFirewallRule `
+    -DisplayName "$protocolName-$direction" `
+    -Description $Description `
+    -Direction $direction `
+    -Protocol $protocol `
+    -LocalPort $portNumbers `
+    -Profile $scopes `
+    -Action Allow }
+#
+# Add Ascom Unite LDAP Central phonebok 3268 Outbound 
+if (-not( Get-NetFirewallRule -DisplayName “Ascom Unite LDAP Central phonebok 3268-Outbound” -ErrorAction SilentlyContinue)) { 
+$protocolName="Ascom Unite LDAP Central phonebok 3268"
+$Description="Ascom Unite LDAP Central phonebok 3268"
+$protocol="TCP"
+$portNumbers='3268'
+$direction="Outbound"
+$scopes='Domain', 'Public', 'Private'
+
+New-NetFirewallRule `
+    -DisplayName "$protocolName-$direction" `
+    -Description $Description `
+    -Direction $direction `
+    -Protocol $protocol `
+    -LocalPort $portNumbers `
+    -Profile $scopes `
+    -Action Allow }
+#
+# Add Ascom Unite LDAP Central phonebok SSL 3269 Outbound 
+if (-not( Get-NetFirewallRule -DisplayName “Ascom Unite LDAP Central phonebok SSL 3269-Outbound” -ErrorAction SilentlyContinue)) { 
+$protocolName="Ascom Unite LDAP Central phonebok SSL 3269"
+$Description="Ascom Unite LDAP Central phonebok SSL 3269"
+$protocol="TCP"
+$portNumbers='3269'
+$direction="Outbound"
+$scopes='Domain', 'Public', 'Private'
+
+New-NetFirewallRule `
+    -DisplayName "$protocolName-$direction" `
+    -Description $Description `
+    -Direction $direction `
+    -Protocol $protocol `
+    -LocalPort $portNumbers `
+    -Profile $scopes `
+    -Action Allow }
+#
+#
+# Add Ascom Unite UDP 3217 Outbound 
+if (-not( Get-NetFirewallRule -DisplayName “Ascom Unite UDP 3217-Outbound” -ErrorAction SilentlyContinue)) { 
+$protocolName="Ascom Unite UDP 3217"
+$Description="Ascom Unite UDP 3217 UUS"
+$protocol="UDP"
+$portNumbers='3217'
+$direction="Outbound"
+$scopes='Domain', 'Public', 'Private'
+
+New-NetFirewallRule `
+    -DisplayName "$protocolName-$direction" `
+    -Description $Description `
+    -Direction $direction `
+    -Protocol $protocol `
+    -LocalPort $portNumbers `
+    -Profile $scopes `
+    -Action Allow }
+#
+#
+# Add Ascom Unite HTTP 8181 Outbound 
+if (-not( Get-NetFirewallRule -DisplayName “Ascom Unite HTTP 8181-Outbound” -ErrorAction SilentlyContinue)) { 
+$protocolName="Ascom Unite HTTP 8181"
+$Description="Ascom Unite HTTPS 8181"
+$protocol="TCP"
+$portNumbers='8181'
+$direction="Outbound"
+$scopes='Domain', 'Public', 'Private'
+
+New-NetFirewallRule `
+    -DisplayName "$protocolName-$direction" `
+    -Description $Description `
+    -Direction $direction `
+    -Protocol $protocol `
+    -LocalPort $portNumbers `
+    -Profile $scopes `
+    -Action Allow }
+#
