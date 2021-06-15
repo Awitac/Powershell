@@ -26,8 +26,8 @@
 #    Unite TCP   8045    Unite View API
 #
 # IP Ports between LDAP Server and Unite
-#    UNITE TCP	389		Unite LDAP
-#    UNITE TCP	636		Unite LDAP SSL
+#    UNITE TCP	389     Unite LDAP
+#    UNITE TCP	636     Unite LDAP SSL
 #    UNITE TCP	3268	Unite LDAP Central phonebok
 #    UNITE TCP	3269	Unite LDAP Central phonebok SSL
 #
