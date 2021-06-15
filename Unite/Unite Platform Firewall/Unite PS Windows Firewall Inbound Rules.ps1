@@ -13,10 +13,10 @@
 #    Unite TCP   33010   Unite VoWiFi WebSocket
 #
 # IP Ports between DECT System and Unite
-#	Unite TCP   1817    Unite IP-DECT (encrypted)
-#   Unite TCP   10146   Unite IP-DECT Messaging (encrypted)
-#   Unite TCP   10147   Unite IP-DECT Messaging (encrypted)
-#	Unite TCP   33010   Unite IP-DECT WebSocket
+#    Unite TCP   1817    Unite IP-DECT (encrypted)
+#    Unite TCP   10146   Unite IP-DECT Messaging (encrypted)
+#    Unite TCP   10147   Unite IP-DECT Messaging (encrypted)
+#    Unite TCP   33010   Unite IP-DECT WebSocket
 #           
 # IP Ports between Ascom Myco and Unite
 #    Unite TCP   33003   Ascom Myco WebSocket
@@ -26,15 +26,15 @@
 #    Unite TCP   8045    Unite View API
 #
 # IP Ports between LDAP Server and Unite
-#	 UNITE TCP	389		Unite LDAP
-#	 UNITE TCP	636		Unite LDAP SSL
-#	 UNITE TCP	3268	Unite LDAP Central phonebok
-#	 UNITE TCP	3269	Unite LDAP Central phonebok SSL
+#    UNITE TCP	389		Unite LDAP
+#    UNITE TCP	636		Unite LDAP SSL
+#    UNITE TCP	3268	Unite LDAP Central phonebok
+#    UNITE TCP	3269	Unite LDAP Central phonebok SSL
 #
 # IP Ports for Device Management
-#	 Unite TCP   10153   Device Manager
+#    Unite TCP   10153   Device Manager
 #    Unite HTTP  7919    Device File download
-#	 Unite TCP   10176   Logon (IPBS)/IP DECT Gateway (IPBL) to Device Manager
+#    Unite TCP   10176   Logon (IPBS)/IP DECT Gateway (IPBL) to Device Manager
 #    Unite HTTP  10217   Logon Ascom Myco DECT to DeviceManager
 #
 # IP Ports for OAP
@@ -43,7 +43,7 @@
 #
 # IP Ports for Unite AM/Unite PS
 #    Unite UDP   3217    Unite UUS
-#	 Unite HTTP  8181    Unite Supervisor Web interface (http)
+#    Unite HTTP  8181    Unite Supervisor Web interface (http)
 #           
 # IP Ports for SQL
 #    Unite TCP   1433    Default SQL communication
