@@ -15,6 +15,8 @@
 #    RabbitMQ TCP   5671    RabbitMQ Unite publish and consume messages on the port (encrypted)
 #    RabbitMQ TCP   5672    RabbitMQ Unite publish and consume messages on the port
 #
+#            NO GARANTIES! ALWAYS CONFIRM THE RULES AFTER RUNNING THE SCRIPT
+#
 #######################################################################################################
 # 
 #
