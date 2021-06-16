@@ -60,7 +60,7 @@ if (-not( Get-NetFirewallRule -DisplayName “Ascom Unite Axess 29912-Inbound”
 $protocolName="Ascom Unite Axess 29912"
 $Description="Ascom Unite Axess Websocket 29912"
 $protocol="TCP"
-$portNumbers='8018'
+$portNumbers='29912'
 $direction="Inbound"
 $scopes='Domain', 'Public', 'Private'
 
