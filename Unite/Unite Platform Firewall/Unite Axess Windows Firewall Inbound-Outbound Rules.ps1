@@ -12,7 +12,9 @@
 #    Unite TCP   443     Unite Axess (https) Standalone Axess server
 #    Unite TCP   444     Unite Axess (https) Shared PS / Axess server
 #
-#    NOTE: Depending on the Axess installation unmark rule 443 or 444   
+#            NOTE: Depending on the Axess installation remove rule 443 or 444   
+#
+#            NO GARANTIES! ALWAYS CONFIRM THE RULES AFTER RUNNING THE SCRIPT
 #
 #######################################################################################################
 # 
