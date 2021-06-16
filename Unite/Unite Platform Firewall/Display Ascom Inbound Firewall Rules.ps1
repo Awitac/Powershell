@@ -3,9 +3,7 @@
 # 
 # Script will check for all Ascom Inbound rules
 #    
-#
 #######################################################################################################
-#
 #
 #
 Get-NetFirewallRule -Displayname "Ascom*" | Where { $_.Direction -eq "Inbound"  } | 
