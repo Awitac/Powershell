@@ -1,7 +1,7 @@
 ﻿# Creatated by Awitac 
 # Changes                                                                              ES 2021-06-16 
 # 
-# Script will create inbound for a RabbitMQ cluster installation
+# Script will create inbound rules for a RabbitMQ cluster installation
 #    
 # IP Ports for RabbitMQ Nodes Inbound
 #    RabbitMQ TCP   15672   RabbitMQ Management and monitoring of RabbitMQ WEB
