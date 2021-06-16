@@ -1,14 +1,18 @@
+# Creatated by Awitac 
+# Changes                                                                              ES 2021-06-16 
+# 
 #######################################################################################################
-## STOP Ascom IIS Sites
+#
+# STOP Ascom IIS Sites
 Stop-WebSite 'Ascom Unite'
 Stop-WebSite 'Ascom Unite Device Manager'
 Start-Sleep -Seconds 1
 
-## STOP RABBIT 
+# STOP RABBIT 
 Stop-Process -Name "erlsrv" -Force
 Start-Sleep -Seconds 1
 
-## Set recovery mode to no action needs "service name"
+# Set recovery mode to no action needs "service name"
 $array = @("AscomActivePassiveHandler"                  ,
 "Ascom Unite Central Contacts Service"                  ,
 "Ascom Unite ClientDataService"                         ,
@@ -42,7 +46,7 @@ $array = @("AscomActivePassiveHandler"                  ,
 "UserSyncService"                                       ,
 "Ascom Unite WSCSI")
 
-## Set Force stop services, needs service path name
+# Set Force stop services, needs service path name
 $array2 = @("Ascom.Unite.ActivePassiveHandlerService"   ,
 "Ascom.Unite.CentralContactsService"                    ,      
 "Ascom.Unite.ClientDataService"                         , 
