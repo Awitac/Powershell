@@ -132,6 +132,8 @@ New-NetFirewallRule `
     -LocalPort $portNumbers `
     -Profile $scopes `
     -Action Allow }
+#
+#
 # Add Ascom RabbitMQ TCP 5671 Outbound 
 if (-not( Get-NetFirewallRule -DisplayName “Ascom RabbitMQ 5671-Outbound” -ErrorAction SilentlyContinue)) { 
 $protocolName="Ascom RabbitMQ 5671"
