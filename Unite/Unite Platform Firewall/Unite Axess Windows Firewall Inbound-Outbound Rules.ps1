@@ -12,14 +12,13 @@
 #    Unite TCP   443     Unite Axess (https) Standalone Axess server
 #    Unite TCP   444     Unite Axess (https) Shared PS / Axess server
 #
-#    NOTE: Depending on the Axess installation unmark rule 443 or 444
-#    
+#    NOTE: Depending on the Axess installation unmark rule 443 or 444   
 #
 #######################################################################################################
 # 
 #
 # Add Ascom Unite Axess TCP 443 Inbound 
-if (-not( Get-NetFirewallRule -DisplayName ìAscom Unite Axess 443-Inboundî -ErrorAction SilentlyContinue)) { 
+if (-not( Get-NetFirewallRule -DisplayName ‚ÄúAscom Unite Axess 443-Inbound‚Äù -ErrorAction SilentlyContinue)) { 
 $protocolName="Ascom Unite Axess 443"
 $Description="Ascom Unite Axess HTTPS 443"
 $protocol="TCP"
@@ -38,7 +37,7 @@ New-NetFirewallRule `
 # 
 #
 # Add Ascom Unite Axess TCP 444 Inbound 
-if (-not( Get-NetFirewallRule -DisplayName ìAscom Unite Axess 444-Inboundî -ErrorAction SilentlyContinue)) { 
+if (-not( Get-NetFirewallRule -DisplayName ‚ÄúAscom Unite Axess 444-Inbound‚Äù -ErrorAction SilentlyContinue)) { 
 $protocolName="Ascom Unite Axess 444"
 $Description="Ascom Unite Axess HTTPS 444"
 $protocol="TCP"
@@ -57,7 +56,7 @@ New-NetFirewallRule `
 #
 #
 # Add Ascom Unite Axess Websocket 29912 Inbound 
-if (-not( Get-NetFirewallRule -DisplayName ìAscom Unite Axess 29912-Inboundî -ErrorAction SilentlyContinue)) { 
+if (-not( Get-NetFirewallRule -DisplayName ‚ÄúAscom Unite Axess 29912-Inbound‚Äù -ErrorAction SilentlyContinue)) { 
 $protocolName="Ascom Unite Axess 29912"
 $Description="Ascom Unite Axess Websocket 29912"
 $protocol="TCP"
@@ -76,7 +75,7 @@ New-NetFirewallRule `
 # 
 #
 # Add Ascom Unite Axess TCP 443 Outbound 
-if (-not( Get-NetFirewallRule -DisplayName ìAscom Unite Axess 443-Outboundî -ErrorAction SilentlyContinue)) { 
+if (-not( Get-NetFirewallRule -DisplayName ‚ÄúAscom Unite Axess 443-Outbound‚Äù -ErrorAction SilentlyContinue)) { 
 $protocolName="Ascom Unite Axess 443"
 $Description="Ascom Unite Axess HTTPS 443"
 $protocol="TCP"
@@ -95,7 +94,7 @@ New-NetFirewallRule `
 # 
 #
 # Add Ascom Unite Axess TCP 444 Outbound 
-if (-not( Get-NetFirewallRule -DisplayName ìAscom Unite Axess 444-Outboundî -ErrorAction SilentlyContinue)) { 
+if (-not( Get-NetFirewallRule -DisplayName ‚ÄúAscom Unite Axess 444-Outbound‚Äù -ErrorAction SilentlyContinue)) { 
 $protocolName="Ascom Unite Axess 444"
 $Description="Ascom Unite Axess HTTPS 444"
 $protocol="TCP"
