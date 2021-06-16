@@ -1,18 +1,25 @@
-## List proccess
-## NPM(K) – The amount of non-paged memory a process is using, displayed in kilobytes.
-## PM(M) – The amount of pageable memory a process is using.
-## WS(M) – The size of the working set of the process, displayed in megabytes. 
-## VM(M) – The amount of virtual memory that the process is using, displayed in megabytes.
-## CPU(S) – The amount of processor time that the process has used on all processes.
-## Id – The process ID (PID) of the process.
-## SI – Session Identifier of the running process.
+# Creatated by Awitac 
+# Changes                                                                              ES 2021-06-16 
+# 
+# Script will check for all Ascom Inbound rules
+#    
+#######################################################################################################
+#
+# List proccess
+# NPM(K) – The amount of non-paged memory a process is using, displayed in kilobytes.
+# PM(M) – The amount of pageable memory a process is using.
+# WS(M) – The size of the working set of the process, displayed in megabytes. 
+# VM(M) – The amount of virtual memory that the process is using, displayed in megabytes.
+# CPU(S) – The amount of processor time that the process has used on all processes.
+# Id – The process ID (PID) of the process.
+# SI – Session Identifier of the running process.
 Get-Process
 
-## Display instance of the process and TCP connections
+# Display instance of the process and TCP connections
 Get-Process -Name Ascom.Unite.TimerService.Receiver | ForEach-Object { Get-NetTCPConnection -OwningProcess $_.Id -ErrorAction SilentlyContinue }
 
-## Kill a process by PID
+# Kill a process by PID
 Stop-Process -ID 9404 -Force
 
-## Kill a process by name
+# Kill a process by name
 Stop-Process -Name "Ascom.Unite.TimerService.Receiver" -Force
