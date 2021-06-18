@@ -1,4 +1,15 @@
-﻿$username = "admin"
+# Creatated by Awitac 
+# Changes                                                         ES/SA 2021-06-18 
+###################################################################################
+# Script that checks a spesific rabbitmq que. 
+# 
+# $vhost = "%2F" = if you have / as vhost then you need to enter %2F as vhost
+#
+##################################################################################
+#
+#
+# Check RabbitMQ on remote server
+$username = "admin"
 $password = "changeme"
 $hostname = "awitac-node1"
 $vhost = "%2F"
