@@ -8,7 +8,7 @@
 ##################################################################################
 #
 #
-# Check RabbitMQ on remote server
+# Check RabbitMQ Que
 $username = "admin"
 $password = "changeme"
 $hostname = "awitac-node1"
