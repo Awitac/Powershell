@@ -1,4 +1,16 @@
- # Create RabbitMQ configuration file with pause minority
+# Creatated by Awitac 
+# Changes                                                         ES/SA 2021-06-20 
+###################################################################################
+# 
+# Step 1
+# Create a RabbitMQ and basic cluster configuration for autoheal
+#
+# Step 2
+# Copy configuration file do Document folder
+#
+###################################################################################
+#
+# Create RabbitMQ configuration file with pause minority
 New-Item -Path 'C:\ProgramData\RabbitMQ\rabbitmq.conf' -ItemType File -Force
 Write-Host "The file [$file] has been created."
 
@@ -20,8 +32,8 @@ Add-Content C:\ProgramData\RabbitMQ\rabbitmq.conf "## ssl_options.cacertfile = C
 Add-Content C:\ProgramData\RabbitMQ\rabbitmq.conf "## ssl_options.certfile = C:\\certs\\server_certificate.pem"
 Add-Content C:\ProgramData\RabbitMQ\rabbitmq.conf "## ssl_options.keyfile = C:\\certs\\server_key.pem"
 Add-Content C:\ProgramData\RabbitMQ\rabbitmq.conf "##"
-
-
+#
+#
 # Copy rabbitmq.conf in Documents folder
 Copy-Item 'C:\ProgramData\RabbitMQ\rabbitmq.conf' -destination $ENV:UserProfile\Documents -Force
 Write-Host "The file [$file] has been copied.
