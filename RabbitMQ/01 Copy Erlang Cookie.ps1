@@ -2,7 +2,6 @@
 # Changes                                                         ES/SA 2021-06-18 
 ###################################################################################
 #
-# 
 # Step 1
 # Copy .erlang.cookie  from  "c:\windows\system32\config\systemprofile\
 # to curent user system profile
