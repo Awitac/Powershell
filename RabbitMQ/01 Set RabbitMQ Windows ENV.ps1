@@ -8,6 +8,4 @@
 #
 ###################################################################################
 #
-$Name = 'RABBITMQ_BASE'
-$Value = '%PROGRAMDATA%\RabbitMQ'
-[System.Environment]::SetEnvironmentVariable($Name,$Value,[System.EnvironmentVariableTarget]::Machine)
+[System.Environment]::SetEnvironmentVariable('RABBITMQ_BASE','%PROGRAMDATA%\RabbitMQ',[System.EnvironmentVariableTarget]::Machine)
