@@ -9,7 +9,6 @@
 # Step 2
 # Copy modified erlang cookie to Document foler
 #
-#
 ##################################################################################
 #
 # Copy .erlang.cookie to curent user profile
