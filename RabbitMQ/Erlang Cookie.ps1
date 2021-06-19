@@ -1,16 +1,9 @@
-﻿# Creatated by Awitac 
+# Creatated by Awitac 
 # Changes                                                         ES/SA 2021-06-18 
 ###################################################################################
-#
 # 
 # NOTE: Erlang needs to be installed first
 #
-# Step 1
-# Script will add RabbitMQ Windows Environment Variables,
-#    RABBITMQ_BASE
-#    %PROGRAMDATA%\RabbitMQ
-#
-# Step 2
 # Script will change the default value of the erlang cookie in 
 # "c:\windows\system32\config\systemprofile\.erlang.cookie" 
 # to GEOQMMYBBKPAHKDIKYVB.
@@ -18,17 +11,10 @@
 # After changing the value in the system profile folder the script will do 
 # the same for the current logged in user erlang cookie 
 # 
-# Step 3
+# Step 2
 # Copy modified erlang cookie to Document foler
 #
 ##################################################################################
-#
-#
-# Check RabbitMQ on remote server
-$Name = 'RABBITMQ_BASE'
-$Value = '%PROGRAMDATA%\RabbitMQ'
-[System.Environment]::SetEnvironmentVariable($Name,$Value,[System.EnvironmentVariableTarget]::Machine)
-#
 #
 # Set Erlang Cookie in "windows\system32\config\systemprofile"
 $erlangcookiefile  = "c:\windows\system32\config\systemprofile\.erlang.cookie"
@@ -53,6 +39,3 @@ if (-not(Test-Path -Path $file -PathType Leaf)) {
          throw $_.Exception.Message
      }
  }
-
-
-
