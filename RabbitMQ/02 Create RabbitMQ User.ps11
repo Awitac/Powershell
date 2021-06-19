@@ -3,12 +3,13 @@
 ###################################################################################
 # 
 # Step 1
-# Create a new RabbitMQ Admin user
+# Create a new RabbitMQ, adds the user to administrator group and creates
+# rights for vhost "/"
 #
 # Step 2
 # Enable RabbitMQ WEB GUI
 #
-##################################################################################
+###################################################################################
 #
 # \rabbitmqctl.bat path
 $rabbitctlpath = 'C:\Program Files\RabbitMQ Server\rabbitmq*\sbin'   
