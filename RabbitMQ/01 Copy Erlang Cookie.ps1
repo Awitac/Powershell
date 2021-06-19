@@ -12,7 +12,6 @@
 #
 ##################################################################################
 #
-#
 # Copy .erlang.cookie to curent user profile
 Copy-Item "$env:windir\System32\config\systemprofile\.erlang.cookie" -Destination $env:USERPROFILE -Force
 #
