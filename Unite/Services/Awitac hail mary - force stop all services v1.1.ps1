@@ -1,6 +1,11 @@
 # Creatated by Awitac 
 # Changes                                                                              ES 2021-06-16 
 # 
+#                                   ###### WARNING ######
+#      This script should only be run if you encounter issue with the default PS uninstallation
+#      Lets the PS un installation window roll back the system, when it is done, run the script
+#      then run the default PS uninstallation 
+#
 #######################################################################################################
 #
 # STOP Ascom IIS Sites
