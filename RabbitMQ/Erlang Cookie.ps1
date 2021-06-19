@@ -21,12 +21,6 @@
 # Step 3
 # Copy modified erlang cookie to Document foler
 #
-# Step 4
-# Create RabbitMQ folder in Programdata
-#
-# Step 5
-# Create RabbitMQ configuration file with pause minority
-#
 ##################################################################################
 #
 #
