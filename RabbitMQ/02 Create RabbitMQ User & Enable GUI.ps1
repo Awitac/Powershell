@@ -3,8 +3,8 @@
 ###################################################################################
 # 
 # Step 1
-# Create a new RabbitMQ, adds the user to administrator group and creates
-# rights for vhost "/"
+# Create a new RabbitMQ, adds the user to administrator group and create
+# user permission to vhost "/"
 #
 # Step 2
 # Enable RabbitMQ WEB GUI
