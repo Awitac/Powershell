@@ -12,18 +12,6 @@ New-Object System.Net.Sockets.TcpClient($IP_Address,8181)
 # Check Unite HTTPS 
 New-Object System.Net.Sockets.TcpClient($IP_Address,443)
 
-# Check  Unite Fault Notification
-New-Object System.Net.Sockets.TcpClient($IP_Address,8124)
-
-# Check Unite Patient Information Service 
-New-Object System.Net.Sockets.TcpClient($IP_Address,8114)
-
-# Check Unite Rounding Timer Service
-New-Object System.Net.Sockets.TcpClient($IP_Address,8115)
-
-# Check Unite Rounding Timer Event Service
-New-Object System.Net.Sockets.TcpClient($IP_Address,8116)
-
 # Check Unite Supervisor port
 New-Object System.Net.Sockets.TcpClient($IP_Address,8181)
 
