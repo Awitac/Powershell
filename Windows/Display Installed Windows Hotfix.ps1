@@ -1,5 +1,5 @@
 # Creatated by Awitac 
-# Changes                                                         ES/SA 2021-06-19 
+# Changes                                                         ES/SA 2021-06-23
 ###################################################################################
 #
 #  List Installed Windows Hotfixes
