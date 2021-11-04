@@ -1,0 +1,11 @@
+# Display service status
+get-service -DisplayName "Windows Update"
+
+# Stop service
+stop-service -DisplayName "Windows Update"
+
+# set its startup type to “Disabled”
+get-service -DisplayName "Windows Update" | Set-Service -StartupType "Disabled"
+
+# Display service status
+get-service -DisplayName "Windows Update"
