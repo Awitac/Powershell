@@ -1,0 +1,9 @@
+# Creatated by Awitac 
+# Changes                                                             ES 2021-11-04
+###################################################################################
+#
+#  Disable Windows Defender
+# 
+##################################################################################
+# Display Windows Defender
+Remove-WindowsFeature Windows-Defender, Windows-Defender-GUI
