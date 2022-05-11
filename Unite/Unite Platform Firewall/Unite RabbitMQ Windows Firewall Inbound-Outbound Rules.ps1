@@ -11,10 +11,7 @@
 #    RabbitMQ TCP   25672   RabbitMQ Used for inter-node and CLI communication
 #    RabbitMQ TCP   35672-35682      Used by CLI to communinicate between nodes
 #
-# IP Ports for RabbitMQ Nodes Outbound
-#    RabbitMQ TCP   5671    RabbitMQ Unite publish and consume messages on the port (encrypted)
-#    RabbitMQ TCP   5672    RabbitMQ Unite publish and consume messages on the port
-#
+
 #            NO GARANTIES! ALWAYS CONFIRM THE RULES AFTER RUNNING THE SCRIPT
 #
 #######################################################################################################
@@ -134,39 +131,4 @@ New-NetFirewallRule `
     -Action Allow }
 #
 #
-# Add Ascom RabbitMQ TCP 5671 Outbound 
-if (-not( Get-NetFirewallRule -DisplayName “Ascom RabbitMQ 5671-Outbound” -ErrorAction SilentlyContinue)) { 
-$protocolName="Ascom RabbitMQ 5671"
-$Description="Ascom RabbitMQ 5671"
-$protocol="TCP"
-$portNumbers='5671'
-$direction="Outbound"
-$scopes='Domain', 'Public', 'Private'
 
-New-NetFirewallRule `
-    -DisplayName "$protocolName-$direction" `
-    -Description $Description `
-    -Direction $direction `
-    -Protocol $protocol `
-    -LocalPort $portNumbers `
-    -Profile $scopes `
-    -Action Allow }
-#
-#
-# Add Ascom RabbitMQ TCP 5672 Outbound 
-if (-not( Get-NetFirewallRule -DisplayName “Ascom RabbitMQ 5672-Outbound” -ErrorAction SilentlyContinue)) { 
-$protocolName="Ascom RabbitMQ 5672"
-$Description="Ascom RabbitMQ 5672"
-$protocol="TCP"
-$portNumbers='5672'
-$direction="Outbound"
-$scopes='Domain', 'Public', 'Private'
-
-New-NetFirewallRule `
-    -DisplayName "$protocolName-$direction" `
-    -Description $Description `
-    -Direction $direction `
-    -Protocol $protocol `
-    -LocalPort $portNumbers `
-    -Profile $scopes `
-    -Action Allow }
