@@ -1,0 +1,93 @@
+# Created by Awitac 
+# Changes                                                         ES/SA 2022-05-11 
+###################################################################################
+#
+# Step 1
+# Function that test a connection against IP and port, send a SYN to the socket
+# 
+# 
+# Step 2
+# Loop that runs the function and send output to console or saves to a file
+#
+##################################################################################
+#
+## Create a empty array "$Array1"
+$Array1 = @()
+
+## Configure an IP address or addresses to test: $servers = '127.0.0.1','192.168.100.50'
+$servers = '10.30.33.50'
+
+## Configure a port or ports to test: $Ports = '5672','15672'
+$Ports = '15672'
+
+## Get Host IP (Grabs the IP address of the NIC that have a default gateway configured)
+$ipv4 = (Get-NetIPConfiguration | Where-Object {$_.IPv4DefaultGateway -ne $null -and $_.NetAdapter.status -ne "Disconnected"}).IPv4Address.IPAddress
+
+## Function that runs the port check
+Function CheckPort
+{
+
+## Get date
+$date = Get-Date -Format 'yyyy-MM-dd - HH:mm:ss:ff'
+
+## Check if timeout is higher 1000 milliseconds: If true right "RSTACK"
+$Timeout = '1000'
+
+## Test connection against IP and port, send a SYN to the socket, if socket is up and listening it will return a SYN ACK. 
+## Writes output of test result to Array1 ($global.result) : makes the result variable avaible to all in global
+    $TCPObject = new-Object system.Net.Sockets.TcpClient
+     if($TCPObject.ConnectAsync($server,$Port).Wait($Timeout))
+    {
+        $TCPObject.Close()
+        $global:Result = "$date - INFO: RCVD - TCP:[SYN:ACK] $ipv4 < $($server):$port" 
+
+    }
+    else
+    {
+        $TCPObject.Close()                                                                       
+        $global:Result = "$date - INFO: RCVD - TCP:[RST:ACK] $ipv4 < $($server):$port"
+    }
+}
+## Loop that starts by wrting the date and connection 
+## Next it runs the CheckPort function
+$i=0
+Do
+{
+## Iterate Servers
+foreach ($server in $servers) 
+        {   
+## Iterate ports
+foreach ($port in $ports)     
+        {
+
+## Clears the Array evrytime the loops run
+$Array1.Clear()
+
+## Get date
+$date = Get-Date -Format 'yyyy-MM-dd - HH:mm:ss:ff'
+
+## Write output to Array1 before each connection test
+$Array1 += "$date - INFO: SEND - TCP:[SYN:   ] $ipv4 > $($server):$port"
+
+## Run function "CheckPort"
+CheckPort
+
+$Array1 += $Result
+
+## Write output to Array1 after each connection test
+$Array1 += "--------------------------------------------------------------------------------------"
+
+## Time to wait before rerunning the function in the loop
+Start-Sleep -seconds 1
+
+## Write $Array1 output to txt file " comment the line out if are not saving to txt file
+#Write-Output $Array1 | Out-file c:\testtest.txt -Append
+
+## Write $Array1 output to console; Comment the line out if you want to save memory while saving to txt file
+$Array1
+        }
+        }
+}
+## Repeat loop 
+While($i++ -le 86400) 
+ 
