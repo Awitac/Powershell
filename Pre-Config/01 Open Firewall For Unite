@@ -2,11 +2,13 @@
 # Changes                                                             ES 2023-02-19
 ###################################################################################
 #
-#    * 
-#    * 
-#    * 
-#    * 
-#    * 
+#    * Defines a list of ports to choose from, with the UDP/TCP protocol specified
+#    * Prompts the user to select which ports to open in the Windows Firewall
+#    * Converts the selected port numbers to an array
+#    * Opens each selected port in the Windows Firewall and checks if the rule already exists
+#    * Adds the new rule to the firewall if it doesn't already exist
+#    * Displays the final output to the user, listing the new rules added and any rules that were skipped because they already existed
+#    * Starts the Windows Defender Firewall with Advanced Security console using the Start-Process cmdlet
 # 
 ##################################################################################
 #
