@@ -8,7 +8,7 @@
 #    * Opens each selected port in the Windows Firewall and checks if the rule already exists
 #    * Adds the new rule to the firewall if it doesn't already exist
 #    * Displays the final output to the user, listing the new rules added and any rules that were skipped because they already existed
-#    * 
+#    * Displays all rules in a table
 #    * Optinal: Starts the Windows Defender Firewall with Advanced Security console using the Start-Process cmdlet
 # 
 ##################################################################################
