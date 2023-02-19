@@ -97,3 +97,4 @@ if ($rulesSkipped.Count -gt 0) {
 
 # Use the Start-Process cmdlet to start the Windows Defender Firewall with Advanced Security console
 Start-Process -FilePath "mmc.exe" -ArgumentList "wf.msc"
+#
