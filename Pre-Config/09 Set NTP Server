@@ -1,0 +1,30 @@
+# Creatated by Awitac 
+# Changes                                                             ES 2023-02-19
+###################################################################################
+#
+#    * Prompts the user to enter the NTP server address
+#    * Saves the answer in the $ntpServer variable
+#    * Configures Windows Server to sync with the specified NTP server
+#    * Starts the Time service and configures it to start automatically at boot
+#    * Last synchronizes Windows Server with the NTP server
+# 
+##################################################################################
+#
+# Ask the user for the NTP server address to use
+$ntpServer = Read-Host "Enter the NTP server address please"
+#
+# Configure Windows Server to synchronize with the specified NTP server
+Set-ItemProperty -Path "HKLM:\SYSTEM\CurrentControlSet\Services\W32Time\Parameters" `
+    -Name "NtpServer" -Value $ntpServer
+Set-ItemProperty -Path "HKLM:\SYSTEM\CurrentControlSet\Services\W32Time\Config" `
+    -Name "AnnounceFlags" -Value "5"
+#    
+# Start the Windows Time service and configure it to start automatically at boot
+Set-Service -Name w32time -Status Running
+Set-Service -Name w32time -StartupType Automatic
+#
+# Synchronize Windows Server with the NTP server
+w32tm /config /manualpeerlist:$ntpServer /syncfromflags:manual /reliable:yes /update
+w32tm /resync /nowait
+#
+#
