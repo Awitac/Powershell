@@ -86,15 +86,17 @@ if ($rulesAdded.Count -gt 0) {
     Write-Host "`nNo new firewall rules were added." -ForegroundColor Red
 }
 
+Start-Sleep -Seconds 1
 if ($rulesSkipped.Count -gt 0) {
     Write-Host "`nFirewall rules already existed for the following ports:" -ForegroundColor Yellow
     foreach ($port in $rulesSkipped) {
         Write-Host "$($port.Protocol) $($port.Number) $($port.Description)" -ForegroundColor Yellow
     }
 } else {
-    Write-Host "`nNo existing firewall rules were found." -ForegroundColor Cyan
+    Write-Host "`nNo existing firewall rule were found, addeding rule!" -ForegroundColor Cyan
 }
 
 # Use the Start-Process cmdlet to start the Windows Defender Firewall with Advanced Security console
+Start-Sleep -Seconds 2
 Start-Process -FilePath "mmc.exe" -ArgumentList "wf.msc"
 #
