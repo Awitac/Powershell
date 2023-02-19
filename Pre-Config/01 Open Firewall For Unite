@@ -8,7 +8,8 @@
 #    * Opens each selected port in the Windows Firewall and checks if the rule already exists
 #    * Adds the new rule to the firewall if it doesn't already exist
 #    * Displays the final output to the user, listing the new rules added and any rules that were skipped because they already existed
-#    * Starts the Windows Defender Firewall with Advanced Security console using the Start-Process cmdlet
+#    * 
+#    * Optinal: Starts the Windows Defender Firewall with Advanced Security console using the Start-Process cmdlet
 # 
 ##################################################################################
 #
@@ -96,7 +97,21 @@ if ($rulesSkipped.Count -gt 0) {
     Write-Host "`nNo existing firewall rule were found, addeding rule!" -ForegroundColor Cyan
 }
 
+Write-Host "Display all Ascom Inbound Firewall Rules" -ForegroundColor Cyan
+
+# Display all Ascom Rules
+Get-NetFirewallRule -DisplayName "Ascom*" | Where-Object { $_.Direction -eq "Inbound" } |
+Format-Table DisplayName, DisplayGroup, 
+@{Name='Protocol';Expression={($_ | Get-NetFirewallPortFilter).Protocol}}, 
+@{Name='LocalPort';Expression={($_ | Get-NetFirewallPortFilter).LocalPort}}, 
+@{Name='RemotePort';Expression={($_ | Get-NetFirewallPortFilter).RemotePort}}, 
+@{Name='RemoteAddress';Expression={($_ | Get-NetFirewallAddressFilter).RemoteAddress}}, Enabled, Profile, Direction, Action -AutoSize -Wrap | Out-String -Stream | ForEach-Object { Write-Host $_ -ForegroundColor Green }
+
+
+# Keap script running until user press exit
+Read-Host -Prompt "Press Enter to exit"
+
 # Use the Start-Process cmdlet to start the Windows Defender Firewall with Advanced Security console
-Start-Sleep -Seconds 2
-Start-Process -FilePath "mmc.exe" -ArgumentList "wf.msc"
+## Start-Sleep -Seconds 3
+## Start-Process -FilePath "mmc.exe" -ArgumentList "wf.msc"
 #
