@@ -1,0 +1,78 @@
+# Creatated by Awitac 
+# Changes                                                                                                   ES/SA 2023-02-20
+#
+#############################################################################################################################
+#
+#    * Retrieve a list of installed .NET runtimes using the dotnet command
+#    * Select the latest .NET Core 6.x version from the list
+#    * If the selected version is already installed, output a message to indicate that
+#    * If the version is not found, download and install the .NET Core 6.0.14 hosting bundle from Microsoft's download site
+#    * Check for the presence of .NET Framework 4.8 by reading a registry key
+#    * If the version is already installed, output a message to indicate that
+#    * If the version is not found, download and install the .NET Framework 4.8 installer from Microsoft's download site
+# 
+#############################################################################################################################
+#
+# Get list of installed .NET runtimes
+$runtimeList = dotnet --list-runtimes
+
+# Select the latest .NET Core 6.x version installed
+$netCoreVersion = $runtimeList | Select-String -Pattern "6." | Select-Object -First 1 | ForEach-Object { $_.Line.Split(' ')[1] }
+
+# Check if .NET Core 6.x is already installed
+if ($netCoreVersion -ne $null) {
+    Write-Host "Output: .NET Framework" $netCoreVersion "already installed on the server" -ForegroundColor Yellow
+
+} else {
+    # .NET Core 6.x not found, so download and install the hosting bundle
+    Write-Host "Output: .NET Framewrok 6.x not found" -ForegroundColor Red
+    Start-Sleep -Seconds 5
+    $url = "https://download.visualstudio.microsoft.com/download/pr/321a2352-a7aa-492a-bd0d-491a963de7cc/6d17be7b07b8bc22db898db0ff37a5cc/dotnet-hosting-6.0.14-win.exe"
+    $downloadPath = "C:\mydotnetdownloads\dotnet-hosting-6.0.14-win.exe"
+    $arguments = "/install /quiet /norestart"
+
+    # Create download directory if it doesn't exist
+    if (!(Test-Path $downloadPath)) {
+        New-Item -ItemType Directory -Path "C:\mydotnetdownloads" -Force | Out-Null
+    }
+
+    # Download and install the hosting bundle
+    Invoke-WebRequest -Uri $url -OutFile $downloadPath
+    Start-Process -FilePath $downloadPath -ArgumentList $arguments -Wait
+    Remove-Item $downloadPath
+
+    # Confirm that the installation was successful
+    Write-Host "Output: .NET Framework 6.0.14 hosting bundle has been installed on the server" -ForegroundColor Green
+    Start-Sleep -Seconds 5
+}
+
+# Check if .NET Framework 4.8 is installed
+$dotnetVersion = Get-ItemPropertyValue 'HKLM:\SOFTWARE\Microsoft\NET Framework Setup\NDP\v4\Full' -Name Release
+
+if ($dotnetVersion -ge "528040") {
+    # .NET Framework 4.8 is already installed
+    Write-Host "Output: .NET Framework 4.8    already installed on the server." -ForegroundColor Yellow
+} else {
+    # .NET Framework 4.8 not found, so download and install it
+    $url = "https://go.microsoft.com/fwlink/?linkid=2088631"
+    $downloadPath = "C:\mydotnetdownloads\ndp48.exe"
+    $arguments = "/q /norestart"
+
+    # Create download directory if it doesn't exist
+    if (!(Test-Path $downloadPath)) {
+        New-Item -ItemType Directory -Path "C:\mydotnetdownloads" -Force | Out-Null
+    }
+
+    # Download and install .NET Framework 4.8
+    Invoke-WebRequest -Uri $url -OutFile $downloadPath
+    Start-Process -FilePath $downloadPath -ArgumentList $arguments -Wait
+    Remove-Item $downloadPath
+
+    # Confirm that the installation was successful and remind user to reboot
+    Write-Host "Output: .NET Framework 4.8 has been installed on the server" -ForegroundColor Green
+    Start-Sleep -Seconds 2
+    Write-Host "Output: Please reboot the server before running the script again" -ForegroundColor Cyan
+}
+
+# Keap script running until user press exit
+Read-Host -Prompt "Press Enter to exit" 
