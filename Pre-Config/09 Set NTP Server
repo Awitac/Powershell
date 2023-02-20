@@ -1,6 +1,7 @@
 # Creatated by Awitac 
-# Changes                                                             ES 2023-02-19
-###################################################################################
+# Changes                                                                                                      ES 2023-02-19
+#
+#############################################################################################################################
 #
 #    * Prompts the user to enter the NTP server address
 #    * Saves the answer in the $ntpServer variable
@@ -8,7 +9,7 @@
 #    * Starts the Time service and configures it to start automatically at boot
 #    * Last synchronizes Windows Server with the NTP server
 # 
-##################################################################################
+#############################################################################################################################
 #
 # Ask the user for the NTP server address to use
 $ntpServer = Read-Host "Enter the NTP server address please"
