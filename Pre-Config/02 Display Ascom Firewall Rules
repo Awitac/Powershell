@@ -1,7 +1,7 @@
 # Creatated by Awitac 
-# Changes                                                             ES 2023-02-20
+# Changes                                                                                                      ES 2023-02-20
 #
-###################################################################################
+#############################################################################################################################
 #
 #    * The script retrieves firewall rules with a display name that starts with "Ascom".
 #    * The script filters the retrieved rules to only select those that have an inbound direction.
@@ -11,7 +11,7 @@
 #    * The output of the script is color-coded; if rules are found, they are displayed in green, 
 #      and if no rules are found, the message is displayed in yellow.
 # 
-##################################################################################
+#############################################################################################################################
 #
 # Retrieve firewall rules with a display name that starts with "Ascom"
 # and only select rules that have an inbound direction.
