@@ -3,17 +3,16 @@
 #
 #############################################################################################################################
 #
-#    * Retrieve a list of installed .NET runtimes using the dotnet command
-#    * Select the latest .NET Core 6.x version from the list
-#    * If the selected version is already installed, output a message to indicate that
+#    * Check registry if .net 6.0 is installed
+#    * If the selected version is installed, output a message 
 #    * If the version is not found, download and install the .NET Core 6.0.14 hosting bundle from Microsoft's download site
 #    * Check for the presence of .NET Framework 4.8 by reading a registry key
-#    * If the version is already installed, output a message to indicate that
+#    * If the version is already installed, output a message 
 #    * If the version is not found, download and install the .NET Framework 4.8 installer from Microsoft's download site
 # 
 #############################################################################################################################
 #
-# Check registry if , net 6.0 is installed
+# Check registry if .net 6.0 is installed
 if (Test-Path 'HKLM:\SOFTWARE\Microsoft\ASP.NET Core\Shared Framework\v6.0') {
     Write-Host 'Output: .NET Framework 6      already installed on the server"' -ForegroundColor Green
 } else {
