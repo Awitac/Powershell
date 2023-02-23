@@ -1,0 +1,29 @@
+# Creatated by Awitac 
+# Changes                                                                                                       ES 2023-02-23
+#
+#############################################################################################################################
+#
+#    * This PowerShell code checks if .NET Framework 6.0 and 4.8 are installed on a server by looking for specific registry  
+#      keys and values. If either version is not found, it outputs a message indicating that it is not installed
+# 
+#############################################################################################################################
+#
+# Check registry if , net 6.0 is installed
+if (Test-Path 'HKLM:\SOFTWARE\Microsoft\ASP.NET Core\Shared Framework\v6.0') {
+    Write-Host 'Output: .NET Framework 6      already installed on the server"' -ForegroundColor Green
+} else {
+    # .NET Core 6.x not found, so download and install the hosting bundle
+    Write-Host "Output: .NET Framewrok 6.x not found" -ForegroundColor Yellow
+    Start-Sleep -Seconds 2
+}
+
+# Check if .NET Framework 4.8 is installed
+$dotnetVersion = Get-ItemPropertyValue 'HKLM:\SOFTWARE\Microsoft\NET Framework Setup\NDP\v4\Full' -Name Release
+
+if ($dotnetVersion -ge "528040") {
+    # .NET Framework 4.8 is already installed
+    Write-Host "Output: .NET Framework 4.8    already installed on the server." -ForegroundColor Green
+} else { 
+     # Confirm that the installation was successful and remind user to reboot
+    Write-Host "Output: .NET Framework 4.8 not found" -ForegroundColor Yellow
+}
