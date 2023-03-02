@@ -1,0 +1,215 @@
+function Install-ErlangOTP {
+    # Get the Windows registry key for Erlang installation
+    $erl_check = Get-ItemProperty "HKLM:\SOFTWARE\WOW6432Node\Microsoft\Windows\CurrentVersion\Uninstall\Erlang*"
+
+    # Check if Erlang is already installed
+    if ($erl_check) {
+        # If Erlang is installed, extract the version number and display a message
+        $erl_displayName = ($erl_check | Select-Object -First 1).DisplayName
+        $erl_version = [regex]::Match($erl_displayName, "\d+\.\d+").Value
+        Write-Host "Info: Erlang OTP Version $erl_version running" -ForegroundColor Yellow
+
+    } else {
+        # If Erlang is not installed, prompt the user to enter the version number
+        Write-Host "Info: Erlang OTP not installed" -ForegroundColor Yellow
+        $erl_installed = $false
+        do{
+            $erl_version = Read-Host "Enter the Erlang version (e.g. 25.2)"
+
+            # Construct the URL to download the Erlang installer
+            # Replace the URL below with the appropriate download URL for your system
+            $erl_url = "https://github.com/erlang/otp/releases/download/OTP-$erl_version/otp_win64_$erl_version.exe"
+            
+            # Create download directory if it doesn't exist
+            $erl_downloadPath = "C:\mydownloads"
+            if (!(Test-Path $erl_downloadPath)) {
+                New-Item -ItemType Directory -Path $erl_downloadPath -Force | Out-Null
+            }
+
+            # Download Erlang
+            $erl_Installer = Join-Path $erl_downloadPath "otp_win64_$erl_version.exe"
+            Write-Host "Info: Downloading Erlang OTP $erl_version from $erl_url to $erl_Installer" -ForegroundColor Yellow
+            try {
+                Invoke-WebRequest -Uri $erl_url -OutFile $erl_Installer -UseBasicParsing -ErrorAction Stop
+                $erl_installed = $true
+            } catch {
+                Write-Host "Error: Failed to download Erlang OTP $erl_version" -ForegroundColor Red
+                Remove-Item $erl_Installer -ErrorAction SilentlyContinue
+            }
+        } until ($erl_installed)
+
+        # Set the installation path and display a message
+        $erl_InstallPath = "C:\Program Files\erl-$erl_version"
+        Write-Host "Info: Installing Erlang OTP $erl_version to $erl_InstallPath (this may take a few minutes)" -ForegroundColor Yellow
+
+        # Install Erlang
+        try {
+            Start-Process -FilePath $erl_Installer -ArgumentList "/S /D=$erl_InstallPath" -Wait -ErrorAction Stop
+            if (Test-Path "${erl_InstallPath}\releases\2*\installed_application_versions") {
+                Write-Host "Info: Erlang OTP $erl_version installed successfully" -ForegroundColor Green
+            } else {
+                Write-Host "Error: Failed to install Erlang OTP $erl_version" -ForegroundColor Red
+            }
+        } catch {
+            Write-Host "Error: Failed to install Erlang OTP $erl_version" -ForegroundColor Red
+        } finally {
+            Remove-Item $erl_Installer -ErrorAction SilentlyContinue
+        }
+    }
+
+    Start-Sleep -Seconds 1
+}
+
+
+# Set up RabbitMQ environment variables
+function Configure-RabbitMQEnvironmentVariables {
+    $RabbitBase = "RABBITMQ_BASE"
+    $RabbitPath = Join-Path $env:ProgramData "RabbitMQ"
+    $RabbitCheck = [Environment]::GetEnvironmentVariable($RabbitBase, "Machine")
+
+    if ($RabbitCheck -eq $RabbitPath) {
+        Write-Host "Info: RabbitMQ Environment Variables already configured" -ForegroundColor Yellow
+    } elseif (![string]::IsNullOrEmpty($RabbitCheck)) {
+        Write-Host "Error: RabbitMQ Environment Variables already exist with a different path" -ForegroundColor Red
+    } else {
+        Write-Host "Info: RabbitMQ Environment Variables not found. Setting variables..." -ForegroundColor Yellow
+        [Environment]::SetEnvironmentVariable($RabbitBase, $RabbitPath, "Machine")
+        $RabbitCheck = [Environment]::GetEnvironmentVariable($RabbitBase, "Machine")
+        if ($RabbitCheck -eq $RabbitPath) {
+            Write-Host "Info: RabbitMQ Environment Variables successfully added" -ForegroundColor Green
+        } else {
+            Write-Host "Error: Failed to set RabbitMQ Environment Variables" -ForegroundColor Red
+        }
+    }
+}
+
+function Install-RabbitMQ {
+# Part 3 
+# Install RabbitMQ on Windows
+
+# Check if the system has a running RabbitMQ service
+if (Get-Service rabbitmq -ErrorAction SilentlyContinue) {
+    Write-Host "Info: RabbitMQ installed" -ForegroundColor Yellow
+
+} else {
+    # Inform the user that RabbitMQ is not installed and that the installation will begin
+    Write-Host "Info: RabbitMQ not installed" -ForegroundColor Yellow
+   
+    # Prompt the user to enter the RabbitMQ version and construct the download URL for the specified RabbitMQ version
+    $Rabbit_Result = "false"
+    do {
+        $Rabbit_Version = Read-Host "Enter the RabbitMQ version (e.g. 3.10.18)"
+        $Rabbit_url = "https://github.com/rabbitmq/rabbitmq-server/releases/download/v$Rabbit_Version/rabbitmq-server-$Rabbit_Version.exe"
+
+        $Rabbit_TestSite = New-Object System.Net.WebClient
+        try {
+            $Rabbit_TestSite.OpenRead($Rabbit_url) | Out-Null
+            Write-Host "Info: Found RabbitMQ installer" -ForegroundColor Green
+            $Rabbit_Result = "true"
+        } catch {
+            Write-Host "Error: RabbitMQ Version not found" -ForegroundColor Red
+            $Rabbit_Result = "false"
+        }
+    } until ($Rabbit_Result -eq "true")
+
+    Write-Host "Info: Download and Install RabbitMQ $Rabbit_Version" -ForegroundColor Yellow
+
+    # Construct the download URL for the specified RabbitMQ version and download the RabbitMQ installer
+    $Rabbit_Installer = "$($env:TEMP)\rabbitmq-server-$Rabbit_Version.exe"
+    Invoke-WebRequest -Uri $Rabbit_url -OutFile $Rabbit_Installer -UseBasicParsing
+
+    # Install RabbitMQ silently 
+    $Rabbit_Install = Start-Process -FilePath $Rabbit_Installer '/S' -Wait:$false -Passthru 
+    Wait-Process -Id $Rabbit_Install.Id
+
+    # Check if RabbitMQ is now installed
+    if (Get-Service rabbitmq -ErrorAction SilentlyContinue) {
+        Write-Host "Info: RabbitMQ $Rabbit_Version installed successfully" -ForegroundColor Green
+        Remove-Item $Rabbit_Installer
+    } else {
+        Write-Host "Error: RabbitMQ $Rabbit_Version installation failed" -ForegroundColor Red
+        Remove-Item $Rabbit_Installer
+    }
+}
+
+Start-Sleep -Seconds 2
+
+    # Copy the Erlang cookie to the user's profile directory
+    $sourcePath = Join-Path $env:SystemRoot 'System32\config\systemprofile\.erlang.cookie'
+    $destinationPath = $env:USERPROFILE
+    Copy-Item $sourcePath $destinationPath -Force -ErrorAction SilentlyContinue
+}
+
+function Restart-RabbitMQ {
+    # Reload ERLANG_HOME variable for running session
+    $Env:ERLANG_HOME = [System.Environment]::GetEnvironmentVariable('ERLANG_HOME', 'Machine')
+    $Env:ERLANG_HOME 
+    $cmdworkingDirectory = Join-Path 'C:\Program Files\RabbitMQ Server' 'rabbitmq_server-3.*\sbin'
+
+    # Stop and Start Rabbit
+    Write-Host 'Info: Run rabbitmqctl.bat stop_app' -ForegroundColor Yellow
+    Start-Process -FilePath 'cmd.exe' -ArgumentList "/c cd `"$cmdworkingDirectory`" & rabbitmqctl.bat stop_app" -WorkingDirectory $cmdworkingDirectory -NoNewWindow -Wait
+    Start-Sleep -Seconds 8
+
+
+    Write-Host 'Info: Run rabbitmqctl.bat start_app' -ForegroundColor Yellow
+    Start-Process -FilePath 'cmd.exe' -ArgumentList "/c cd `"$cmdworkingDirectory`" & rabbitmqctl.bat start_app" -WorkingDirectory $cmdworkingDirectory -NoNewWindow -Wait
+    Start-Sleep -Seconds 6
+    
+    # Use the rabbitmq-plugins.bat enable rabbitmq_management to activate the GUI
+    Write-Host "Info: Run rabbitmq-plugins.bat enable rabbitmq_management" -ForegroundColor Yellow
+    Start-Process -FilePath "cmd.exe" -ArgumentList "/c cd `"$cmdworkingDirectory`" & rabbitmq-plugins.bat enable rabbitmq_management" -NoNewWindow -Wait
+    Start-Sleep -Seconds 6
+}
+
+function Add-RabbitMQ-User {
+    # Ask for username input and validate
+    Write-Host "###################################" -ForegroundColor Yellow
+
+    $username = ""
+    while ($username -eq "" -or $username.Contains(" ")) {
+        $username = Read-Host "Enter username"
+    }
+    Write-Host "Info: Username set to: $username" -ForegroundColor Yellow
+
+    # Ask for password input and validate
+    $password = ""
+    while ($password -eq "" -or $password.Contains(" ")) {
+        $password = Read-Host "Enter password"
+    }
+    Write-Host "Info: Password set to: $password" -ForegroundColor Yellow
+
+    # Use the rabbitmqctl.bat add_user command based on the input
+    $cmdworkingDirectory = Join-Path 'C:\Program Files\RabbitMQ Server' 'rabbitmq_server-3.*\sbin'
+    Write-Host "Info: Adding RabbitMQ user" -ForegroundColor Yellow
+    Start-Process -FilePath "cmd.exe" -ArgumentList "/c cd `"$cmdworkingDirectory`" & rabbitmqctl.bat add_user $username $password" -NoNewWindow -Wait
+    Write-Host "Info: RabbitMQ User $username and password added" -ForegroundColor Green
+    Start-Sleep -Seconds 1
+
+    # Use the rabbitmqctl.bat set_user_tags to add the user to the adminstrator group
+    Write-Host "Info: Set user $username in the administrator group " -ForegroundColor Yellow
+    Start-Process -FilePath "cmd.exe" -ArgumentList "/c cd `"$cmdworkingDirectory`" & rabbitmqctl.bat set_user_tags $username administrator" -NoNewWindow -Wait
+    Write-Host "Info: User $username added to administrators" -ForegroundColor Green
+    Start-Sleep -Seconds 1
+
+    # Use the rabbitmqctl.bat set_permissions to give the user permissions to the virtual host
+    $permissions = '".*" ".*" ".*"'
+    Write-Host "Info: Give user $username permissions to the virtual host" -ForegroundColor Yellow
+    Start-Process -FilePath "cmd.exe" -ArgumentList "/c cd `"$cmdworkingDirectory`" & rabbitmqctl.bat set_permissions -p / $username $permissions" -NoNewWindow -Wait
+    Write-Host "Info: User $username given permissions to virtual host '/'" -ForegroundColor Green
+    Start-Sleep -Seconds 1
+
+    # Open the RabbitMQ management GUI in the browser
+    $guiUrl = "http://localhost:15672"
+    Write-Host "Info: Opening RabbitMQ management GUI in the browser: $guiUrl" -ForegroundColor Yellow
+    Start-Process -FilePath $guiUrl
+    Start-Sleep -Seconds 1
+
+}
+
+# Call Function
+Install-ErlangOTP
+Configure-RabbitMQEnvironmentVariables
+Install-RabbitMQ
+Restart-RabbitMQ
+Add-RabbitMQ-User
