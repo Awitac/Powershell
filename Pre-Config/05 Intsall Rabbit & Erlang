@@ -3,7 +3,7 @@
 # Changes                                                                                                    ES/SA 2023-03-02
 #
 #############################################################################################################################
-
+#
 #   # function Install-ErlangOTP
 #       * The function checks if Erlang is already installed in the system or not
 #       * If Erlang is already installed, it extracts the version number and displays a message
