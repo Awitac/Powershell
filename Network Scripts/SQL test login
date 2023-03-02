@@ -1,0 +1,15 @@
+# Set the SQL Server credentials
+$serverName = "AWITAC-G1-N3\G1_SQL"
+$databaseName = "Unite"
+$username = $env:USERNAME
+
+# Measure the time it takes to log in
+$startTime = Get-Date
+$connectionString = "Server=$serverName;Database=$databaseName;Integrated Security=True;"
+$connection = New-Object System.Data.SqlClient.SqlConnection($connectionString)
+$connection.Open()
+$endTime = Get-Date
+$elapsedTime = New-TimeSpan $startTime $endTime
+
+# Display the login time
+Write-Host "Login time: $($elapsedTime.TotalSeconds) seconds"
