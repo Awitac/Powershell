@@ -1,3 +1,45 @@
+
+# Creatated by Awitac 
+# Changes                                                                                                    ES/SA 2023-03-02
+#
+#############################################################################################################################
+
+#   # function Install-ErlangOTP
+#       * The function checks if Erlang is already installed in the system or not
+#       * If Erlang is already installed, it extracts the version number and displays a message
+#       * If Erlang is not installed, it prompts the user to enter the version number
+#       * Constructs the download URL for the Erlang installer and creates a download directory if it doesn't exist
+#       * Downloads Erlang using Invoke-WebRequest and saves it to the download directory
+#       * Sets the installation path to "C:\Program Files\erl-$erl_version"
+#       * Installs Erlang using Start-Process and sets the installation arguments to "/S /D=$erl_InstallPath"
+#
+#   # function Configure-RabbitMQEnvironmentVariables
+#       * Checks if RabbitMQ environment variables already configured if not add it
+#
+#   # function Install-RabbitMQ 
+#       * This function checks if RabbitMQ is already installed on Windows
+#       * If RabbitMQ is not installed, the user is prompted to enter the desired version and the function constructs 
+#         the download URL for that version
+#       * RabbitMQ installer is downloaded and installed silently
+#       * Function checks if RabbitMQ is now installed and removes the installer file
+#       * The Erlang cookie is copied to the user's profile directory
+#
+#   # function Restart-RabbitMQ 
+#       * Function Reload ERLANG_HOME environment variable for powershell
+#         and stops/starts RabbitMQ and enables the GUI  
+#
+#
+#   # function Add-RabbitMQ-User
+#       * Functions creates a user and gives him admin prevliges.
+#       * Asks user for for username and password input
+#       * Use rabbitmqctl.bat add_user command to add the user
+#       * Use rabbitmqctl.bat set_user_tags to add the user to the administrator group
+#       * Use rabbitmqctl.bat set_permissions to give the user permissions to the virtual host
+#       * Open RabbitMQ management GUI in the browser
+#
+#############################################################################################################################
+#
+# Download and Install Erlang
 function Install-ErlangOTP {
     # Get the Windows registry key for Erlang installation
     $erl_check = Get-ItemProperty "HKLM:\SOFTWARE\WOW6432Node\Microsoft\Windows\CurrentVersion\Uninstall\Erlang*"
