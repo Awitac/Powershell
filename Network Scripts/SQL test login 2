@@ -1,0 +1,43 @@
+
+
+
+
+# Set the SQL Server credentials
+$serverName = "AWITAC-G1-N3\G1_SQL"
+$databaseName = "Unite"
+$username = $env:USERNAME
+
+# Measure the time it takes to log in
+
+while ($true) {
+$startTime = Get-Date
+$connectionString = "Server=$serverName;Database=$databaseName;Integrated Security=True;"
+try{
+
+$connection = New-Object System.Data.SqlClient.SqlConnection($connectionString)
+$connection.Open()
+}catch{
+$formatstring = "{0} : {1}`n{2}`n" +
+                "    + CategoryInfo          : {3}`n" +
+                "    + FullyQualifiedErrorId : {4}`n"
+$fields = $_.InvocationInfo.MyCommand.Name,
+          $_.ErrorDetails.Message,
+          $_.InvocationInfo.PositionMessage,
+          $_.CategoryInfo.ToString(),
+          $_.FullyQualifiedErrorId
+
+$formatstring -f $fields
+ $_
+ Out-File -FilePath C:\Process.txt -InputObject  $_ -Encoding ASCII  -append
+}
+
+$endTime = Get-Date
+$elapsedTime = New-TimeSpan $startTime $endTime
+
+# Display the login time
+$outputtext = "$endTime Login time: $($elapsedTime.TotalSeconds) seconds"
+Write-Host $outputtext 
+
+Out-File -FilePath C:\Process.txt -InputObject $outputtext -Encoding ASCII -Width 50 -append
+Start-Sleep -Seconds 5
+}
