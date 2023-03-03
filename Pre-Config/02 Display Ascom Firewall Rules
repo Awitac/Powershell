@@ -3,13 +3,10 @@
 #
 #############################################################################################################################
 #
-#    * The script retrieves firewall rules with a display name that starts with "Ascom".
-#    * The script filters the retrieved rules to only select those that have an inbound direction.
-#    * The script checks if any firewall rules were found.
-#    * If firewall rules are found, the script formats and displays the relevant information in a table.
-#    * If no firewall rules are found, the script displays a message indicating that no rules were found.
-#    * The output of the script is color-coded; if rules are found, they are displayed in green, 
-#      and if no rules are found, the message is displayed in yellow.
+#    * Script retrieves firewall rules with a display name that starts with "Ascom"
+#    * Script filters the retrieved rules to only select those that have an inbound direction
+#    * If firewall rules are found, format and display the relevant information in a table
+#    * If no firewall rules are found, display a message indicating that no rules were found
 # 
 #############################################################################################################################
 #
