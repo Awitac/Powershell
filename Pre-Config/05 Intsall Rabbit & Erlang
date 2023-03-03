@@ -58,7 +58,6 @@ function Install-ErlangOTP {
             $erl_version = Read-Host "Enter the Erlang version (e.g. 25.2)"
 
             # Construct the URL to download the Erlang installer
-            # Replace the URL below with the appropriate download URL for your system
             $erl_url = "https://github.com/erlang/otp/releases/download/OTP-$erl_version/otp_win64_$erl_version.exe"
             
             # Create download directory if it doesn't exist
@@ -124,6 +123,7 @@ function Configure-RabbitMQEnvironmentVariables {
     }
 }
 
+# Download and Install RabbitMQ
 function Install-RabbitMQ {
 # Part 3 
 # Install RabbitMQ on Windows
@@ -181,6 +181,7 @@ Start-Sleep -Seconds 2
     Copy-Item $sourcePath $destinationPath -Force -ErrorAction SilentlyContinue
 }
 
+# Restart RabbitMQ and enable GUI
 function Restart-RabbitMQ {
     # Reload ERLANG_HOME variable for running session
     $Env:ERLANG_HOME = [System.Environment]::GetEnvironmentVariable('ERLANG_HOME', 'Machine')
