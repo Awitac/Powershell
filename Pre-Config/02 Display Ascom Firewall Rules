@@ -11,8 +11,6 @@
 #############################################################################################################################
 #
 # Retrieve firewall rules with a display name that starts with "Ascom"
-# and only select rules that have an inbound direction.
-#
 $firewallRules = Get-NetFirewallRule -DisplayName "Ascom*" | Where-Object { $_.Direction -eq "Inbound" }
 
 # If firewall rules are found, display the relevant information.
