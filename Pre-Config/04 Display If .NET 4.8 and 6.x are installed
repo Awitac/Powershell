@@ -12,7 +12,7 @@
 if (Test-Path 'HKLM:\SOFTWARE\Microsoft\ASP.NET Core\Shared Framework\v6.0') {
     Write-Host 'Output: .NET Framework 6      already installed on the server"' -ForegroundColor Green
 } else {
-    # .NET Core 6.x not found, so download and install the hosting bundle
+    # .NET Core 6.x not found, download and install the hosting bundle
     Write-Host "Output: .NET Framewrok 6.x not found" -ForegroundColor Yellow
     Start-Sleep -Seconds 2
 }
