@@ -1,4 +1,23 @@
-# Set the SQL Server credentials
+# Creatated by Awitac 
+# Changes                                                                                                    ES/SA 2023-03-06
+#
+#############################################################################################################################
+#
+#   The script connects to a SQL Server database with a intergrated account and measures the time it takes to log in. 
+#   It then logs the login time to a text file and handles any connection errors that may occur. 
+#   The script runs indefinitely until a condition is met to exit the loop
+#
+#   * Set SQL Server credentials
+#   * Create an infinite loop
+#       *  Measure login time and log to file
+#       *  Handle connection errors and log to file
+#       *  Dispose of connection object
+#       *   Wait for 1 second
+#   * Add a mechanism to exit the infinite loop based on a condition
+#
+#############################################################################################################################
+#
+## Set the SQL Server credentials
 $serverName = "AWITAC-G1-N3\G1_SQL"
 $databaseName = "Unite"
 $username = $env:USERNAME
