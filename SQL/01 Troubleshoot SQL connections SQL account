@@ -1,0 +1,48 @@
+# Set the SQL Server credentials
+$serverName = "AWITAC-G1-N3\G1_SQL"
+$databaseName = "Unite"
+$username = "your_username"
+$password = "your_password"
+
+# Measure the time it takes to log in
+
+while ($true) {
+    $startTime = Get-Date
+    $connectionString = "Server=$serverName;Database=$databaseName;User Id=$username;Password=$password;"
+    try {
+        $connection = New-Object System.Data.SqlClient.SqlConnection($connectionString)
+        $connection.Open()
+        $endTime = Get-Date
+        $elapsedTime = New-TimeSpan $startTime $endTime
+
+        # Display the login time
+        $outputtext = "$endTime Login time: $($elapsedTime.TotalSeconds) seconds"
+        Write-Output $outputtext 
+
+        Out-File -FilePath C:\Process.txt -InputObject $outputtext -Encoding ASCII -append
+    }
+    catch {
+        $formatstring = "{0} : {1}`n{2}`n" +
+                        "    + CategoryInfo          : {3}`n" +
+                        "    + FullyQualifiedErrorId : {4}`n"
+        $fields = $_.InvocationInfo.MyCommand.Name,
+                  $_.ErrorDetails.Message,
+                  $_.InvocationInfo.PositionMessage,
+                  $_.CategoryInfo.ToString(),
+                  $_.FullyQualifiedErrorId
+
+        $formatstring -f $fields
+        $_
+        Out-File -FilePath C:\Process.txt -InputObject  $_ -Encoding ASCII  -append
+    }
+    finally {
+        $connection.Dispose()
+    }
+
+    Start-Sleep -Seconds 1
+
+    # Add a mechanism to exit the infinite loop
+    if ($some_condition) {
+        break
+    }
+}
