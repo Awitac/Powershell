@@ -81,7 +81,7 @@ $Array1 += "--------------------------------------------------------------------
 Start-Sleep -seconds 1
 
 ## Write $Array1 output to txt file " comment the line out if are not saving to txt file
-#Write-Output $Array1 | Out-file c:\testtest.txt -Append
+#Write-Output $Array1 | Out-file c:\Trace_TCP_Port.txt -Append
 
 ## Write $Array1 output to console; Comment the line out if you want to save memory while saving to txt file
 $Array1
