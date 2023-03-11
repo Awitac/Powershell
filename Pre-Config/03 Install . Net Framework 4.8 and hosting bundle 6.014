@@ -20,12 +20,12 @@ if (Test-Path 'HKLM:\SOFTWARE\Microsoft\ASP.NET Core\Shared Framework\v6.0') {
     Write-Host "Output: .NET Framewrok 6.x not found" -ForegroundColor Yellow
     Start-Sleep -Seconds 5
     $url = "https://download.visualstudio.microsoft.com/download/pr/321a2352-a7aa-492a-bd0d-491a963de7cc/6d17be7b07b8bc22db898db0ff37a5cc/dotnet-hosting-6.0.14-win.exe"
-    $downloadPath = "C:\mydotnetdownloads\dotnet-hosting-6.0.14-win.exe"
+    $downloadPath = "C:\mydownloads\dotnet-hosting-6.0.14-win.exe"
     $arguments = "/install /quiet /norestart"
 
     # Create download directory if it doesn't exist
     if (!(Test-Path $downloadPath)) {
-        New-Item -ItemType Directory -Path "C:\mydotnetdownloads" -Force | Out-Null
+        New-Item -ItemType Directory -Path "C:\mydownloads" -Force | Out-Null
     }
 
     # Download and install the hosting bundle
@@ -47,12 +47,12 @@ if ($dotnetVersion -ge "528040") {
 } else {
     # .NET Framework 4.8 not found, so download and install it
     $url = "https://go.microsoft.com/fwlink/?linkid=2088631"
-    $downloadPath = "C:\mydotnetdownloads\ndp48.exe"
+    $downloadPath = "C:\mydownloads\ndp48.exe"
     $arguments = "/q /norestart"
 
     # Create download directory if it doesn't exist
     if (!(Test-Path $downloadPath)) {
-        New-Item -ItemType Directory -Path "C:\mydotnetdownloads" -Force | Out-Null
+        New-Item -ItemType Directory -Path "C:\mydownloads" -Force | Out-Null
     }
 
     # Download and install .NET Framework 4.8
