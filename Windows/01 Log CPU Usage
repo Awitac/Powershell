@@ -10,29 +10,39 @@
 # 
 #############################################################################################################################
 #
+# Get the number of CPU cores on the system
 $numCores = (Get-WmiObject -Class Win32_Processor | Measure-Object -Property NumberOfCores).Count
 
+# Loop indefinitely
 while ($true) {
+    # Get the current date and time in the specified format
     $dateTime = Get-Date -Format "yyyy/MM/dd HH:mm:ss"
     
+    # Get the CPU usage for each running process, excluding 'idle', '_total', and 'system'
     $processCounters = Get-Counter -ErrorAction SilentlyContinue '\Process(*)\% Processor Time' -MaxSamples 1 | 
                        Select-Object -ExpandProperty CounterSamples | 
                        Where-Object { $_.InstanceName -notmatch '^(idle|_total|system)$' } | 
                        Sort-Object -Property CookedValue -Descending
     
+    # Get the process with the highest CPU usage, if any
     $topProcess = $processCounters | Select-Object -First 1
     if ($topProcess -ne $null) {
+        # Calculate the percentage of CPU usage for the top process, based on the number of CPU cores
         $cpuLoadPercent = '{0:F2}%' -f ($topProcess.CookedValue / $numCores)
-        $processName = $topProcess.InstanceName.Split('\')[-1]
+        $processName = $topProcess.InstanceName.Split('\')[-1] # Get the name of the top process
     } else {
+        # If no processes are running, set CPU usage and process name to 'N/A'
         $cpuLoadPercent = 'N/A'
         $processName = 'N/A'
     }
 
+    # Format the output text with the current date and time, CPU usage, and process name
     $outputtext = "{0,-22}{1,-2} {2,-9}{3}" -f $dateTime, "CPU:", $cpuLoadPercent, "Process: $processName"
 
+    # Write the output text to the console and to a log file
     Write-Host $outputtext
     Out-File -FilePath C:\Awitac_Log_CPU.txt -InputObject $outputtext -Encoding ASCII -append
     
+    # Wait for 1 second before looping again
     Start-Sleep -Seconds 1
 }
