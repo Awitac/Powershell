@@ -1,0 +1,38 @@
+# Creatated by Awitac 
+# Changes                                                                                                      ES 2023-02-19
+#
+#############################################################################################################################
+#
+#   * The script calculates the CPU load percentage and the name of the top process using performance counters
+#   * It retrieves the number of CPU cores to calculate the CPU load percentage
+#   * The script outputs the current time, CPU load percentage, and the name of the top process to the console and a log file
+#   * It repeats this process every second using a while loop
+# 
+#############################################################################################################################
+#
+$numCores = (Get-WmiObject -Class Win32_Processor | Measure-Object -Property NumberOfCores).Count
+
+while ($true) {
+    $dateTime = Get-Date -Format "yyyy/MM/dd HH:mm:ss"
+    
+    $processCounters = Get-Counter -ErrorAction SilentlyContinue '\Process(*)\% Processor Time' -MaxSamples 1 | 
+                       Select-Object -ExpandProperty CounterSamples | 
+                       Where-Object { $_.InstanceName -notmatch '^(idle|_total|system)$' } | 
+                       Sort-Object -Property CookedValue -Descending
+    
+    $topProcess = $processCounters | Select-Object -First 1
+    if ($topProcess -ne $null) {
+        $cpuLoadPercent = '{0:F2}%' -f ($topProcess.CookedValue / $numCores)
+        $processName = $topProcess.InstanceName.Split('\')[-1]
+    } else {
+        $cpuLoadPercent = 'N/A'
+        $processName = 'N/A'
+    }
+
+    $outputtext = "{0,-22}{1,-2} {2,-9}{3}" -f $dateTime, "CPU:", $cpuLoadPercent, "Process: $processName"
+
+    Write-Host $outputtext
+    Out-File -FilePath C:\Awitac_Log_CPU.txt -InputObject $outputtext -Encoding ASCII -append
+    
+    Start-Sleep -Seconds 1
+}
