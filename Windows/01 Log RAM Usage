@@ -1,0 +1,57 @@
+# Creatated by Awitac 
+# Changes                                                                                                      ES 2023-03-13
+#
+#############################################################################################################################
+#
+#   * The script monitors RAM usage of running processes
+#   * Calculates the percentage of RAM used by the process with the highest usage
+#   * Uses an infinite loop to continuously monitor RAM usage
+#   * The script sets counter parameters to get the RAM usage data
+#   * Sorts the RAM usage data and formats the output string
+#
+#############################################################################################################################
+#
+# Define the counter parameters to be used
+$counterParams = @{
+    Counter = '\Process(*)\Working Set - Private'
+    MaxSamples = 1
+    ErrorAction = 'SilentlyContinue'
+}
+
+# Infinite loop to monitor RAM usage continuously
+while ($true) {
+    # Get the current date and time in the specified format
+    $dateTime = Get-Date -Format "yyyy/MM/dd HH:mm:ss"
+    
+    # Get the RAM usage of all running processes, excluding any samples with invalid data
+    $processCounters = Get-Counter @counterParams | 
+                       Select-Object -ExpandProperty CounterSamples | 
+                       Where-Object { $_.InstanceName -notmatch '^(idle|_total|system)$' -and $_.CookedValue -ge 0 } | 
+                       Sort-Object -Property CookedValue -Descending
+    
+    # Get the process with the highest RAM usage
+    $topProcess = $processCounters | Select-Object -First 1
+    
+    # If there is a process with high RAM usage, calculate the percentage of RAM it is using
+    if ($topProcess -ne $null) {
+        $ramUsageBytes = $topProcess.CookedValue
+        $totalRAM = (Get-CimInstance Win32_PhysicalMemory | Measure-Object -Property Capacity -Sum).Sum
+        $ramLoadPercentage = [math]::Round(($ramUsageBytes / $totalRAM) * 100, 2)
+        $processName = $topProcess.InstanceName.Split('\')[-1]
+    } else {
+        # If there are no processes running, set the RAM usage to N/A
+        $ramLoadPercentage = 'N/A'
+        $processName = 'N/A'
+    }
+
+    # Format the output string with the date and time, RAM usage percentage, and process name
+    $outputtext = "{0,-21}{1,-2} {2,-7}{3}" -f $dateTime, "RAM:", "$ramLoadPercentage%", "Process: $processName"
+
+
+    # Write the output to the console and append it to a log file
+    Write-Host $outputtext
+    Out-File -FilePath C:\Awitac_Log_RAM.txt -InputObject $outputtext -Encoding ASCII -append
+    
+    # Pause the script for 1 second before running again
+    Start-Sleep -Seconds 1
+}
