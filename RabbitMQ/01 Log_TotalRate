@@ -11,7 +11,7 @@ $Headers = @{
 }
 
 # Set the API endpoint for the queues
-$Url = $RabbitMQBaseUrl + "/api/queues"
+$Url = $RabbitMQBaseUrl + "/api/queues?columns=name,message_stats.deliver_get_details.rate"
 
 # Print the headers
 Write-Host " Time                 TotalRate        Highest Consuming Queue Rate                                                     Rate  "
@@ -47,7 +47,6 @@ while ($true) {
     # Print the formatted output
     Write-Host $FormattedOutput
     Out-File -FilePath C:\Awitac_Log_RabbitMQ_Rate.txt -InputObject $FormattedOutput -Encoding ASCII -append
-
 
     # Sleep for the specified interval
     Start-Sleep -Seconds $SleepIntervalSeconds
