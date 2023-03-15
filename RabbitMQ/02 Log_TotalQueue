@@ -1,6 +1,3 @@
-# Creatated by Awitac 
-# Changes                                                                                                   ES/SA 2023-03-15
-#
 #############################################################################################################################
 #
 #   * Encodes authentication string for the request header
@@ -12,19 +9,21 @@
 #
 #############################################################################################################################
 #
-#function Monitor-RabbitMQQueues {
+function Monitor-RabbitMQQueues {
     param (
         [string]$RabbitMQBaseUrl = "http://localhost:15672",
         [string]$Username = "guest",
         [string]$Password = "guest",
         [int]$SleepIntervalSeconds = 1,
-        [bool]$ShowOnlyNonEmptyQueues = $true
+        [bool]$ShowOnlyNonEmptyQueues = $true,
+        [string]$LogFilePath = "C:\Awitac_Log_RabbitMQ_Queued.txt"
     )
 
     # Encode the authentication string for the request header
     $EncodedAuth = [System.Convert]::ToBase64String([System.Text.Encoding]::ASCII.GetBytes(("{0}:{1}" -f $Username,$Password)))
     $Headers = @{
         "Authorization" = "Basic $EncodedAuth"
+        "Content-Type"  = "application/json"
     }
 
     # Set the API endpoint for the queues
@@ -38,7 +37,7 @@
     while ($true) {
         try {
             # Fetch the queues from the API
-            $Queues = Invoke-RestMethod -Method Get -Uri $Url -Headers $Headers
+            $Queues = Invoke-RestMethod -Method Get -Uri $Url -Headers $Headers -ErrorAction Stop
 
             # Initialize variables
             $TotalQueuedMessages = 0
@@ -67,7 +66,7 @@
 
             # Print the formatted output
             Write-Host $FormattedOutput
-            Out-File -FilePath C:\Awitac_Log_RabbitMQ_Queued.txt -InputObject $FormattedOutput -Encoding ASCII -append
+            Out-File -FilePath $LogFilePath -InputObject $FormattedOutput -Encoding ASCII -Append
         }
         catch {
             Write-Host "Error fetching queue information. Please check your RabbitMQ settings and connectivity."
@@ -76,6 +75,6 @@
         # Sleep for the specified interval
         Start-Sleep -Seconds $SleepIntervalSeconds
     }
-
+}
 # Call the function with default parameters
 Monitor-RabbitMQQueues
