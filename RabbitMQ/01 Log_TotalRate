@@ -1,3 +1,19 @@
+# Creatated by Awitac 
+# Changes                                                                                                   ES/SA 2023-03-15
+#
+#############################################################################################################################
+#
+#   * Encodes authentication string for the request header
+#   * Sets API endpoint for the queues with specific columns to reduce fetched data
+#   * Starts an infinite loop with the following actions:
+#       * Fetches queue data from the API using a try-catch block to handle errors
+#       * Initializes variables for total message rate and highest consuming queue
+#       * Iterates through queues, calculates total message rate and identifies the highest consuming queue
+#       * Formats and prints the output to the console and appends it to a log file
+#       * Sleeps for the specified interval before fetching data again
+#
+#############################################################################################################################
+#
 function Monitor-RabbitMQMessageRate {
     param (
         [string]$RabbitMQBaseUrl = "http://localhost:15672",
