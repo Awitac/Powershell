@@ -14,7 +14,7 @@ $Headers = @{
 $Url = $RabbitMQBaseUrl + "/api/queues"
 
 # Print the headers
-Write-Host " Time                  TotalRate        Highest Consuming Queue Rate                                                    Rate  "
+Write-Host " Time                 TotalRate        Highest Consuming Queue Rate                                                     Rate  "
 Write-Host "------                ----------      ---------------------------------                                               --------"
 
 # Start the loop
