@@ -1,0 +1,54 @@
+# RabbitMQ configuration
+$RabbitMQBaseUrl = "http://localhost:15672"
+$Username = "admin"
+$Password = "changeme"
+$SleepIntervalSeconds = 1
+
+# Encode the authentication string for the request header
+$EncodedAuth = [System.Convert]::ToBase64String([System.Text.Encoding]::ASCII.GetBytes(("{0}:{1}" -f $Username,$Password)))
+$Headers = @{
+    "Authorization" = "Basic $EncodedAuth"
+}
+
+# Set the API endpoint for the queues
+$Url = $RabbitMQBaseUrl + "/api/queues"
+
+# Print the headers
+Write-Host " Time                  TotalRate        Highest Consuming Queue Rate                                                    Rate  "
+Write-Host "------                ----------      ---------------------------------                                               --------"
+
+# Start the loop
+while ($true) {
+    # Fetch the queues from the API
+    $Queues = Invoke-RestMethod -Method Get -Uri $Url -Headers $Headers
+
+    # Initialize variables
+    $TotalMessageRate = 0
+    $HighestConsumingQueue = $null
+    $HighestMessageRate = 0
+
+    # Iterate through the queues to calculate the total message rate and the highest consuming queue
+    foreach ($Queue in $Queues) {
+        $MessageRate = $Queue.message_stats.deliver_get_details.rate
+        $TotalMessageRate += $MessageRate
+
+        if ($MessageRate -gt $HighestMessageRate) {
+            $HighestMessageRate = $MessageRate
+            $HighestConsumingQueue = $Queue.name
+        }
+    }
+
+    # Get the current date and time
+    $dateTime = Get-Date -Format "yyyy/MM/dd HH:mm:ss"
+
+    # Format the output string
+    $FormattedOutput = "$dateTime {0,8:N2}{1,2}    |    {2,-75} {3,8:N2}{4,2}" -f $TotalMessageRate,"/s", $HighestConsumingQueue, $HighestMessageRate,"/s"
+
+    # Print the formatted output
+    Write-Host $FormattedOutput
+    Out-File -FilePath C:\Awitac_Log_RabbitMQ_Rate.txt -InputObject $FormattedOutput -Encoding ASCII -append
+
+
+    # Sleep for the specified interval
+    Start-Sleep -Seconds $SleepIntervalSeconds
+}
