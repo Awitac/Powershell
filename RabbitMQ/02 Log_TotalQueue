@@ -3,10 +3,12 @@
 #
 #############################################################################################################################
 #
-#  * Monitors RabbitMQ message queues and Fetches queued messages data periodically
-#  * Identifies highest queued messages count and corresponding queue
-#  * Displays total queued messages count and highest queued queue details
-#  * Accepts parameters for API URL, credentials, sleep interval, and filtering option
+#   * Encodes authentication string for the request header
+#   * Sets API endpoint for the queues with specific columns to reduce fetched data
+#   * Monitors RabbitMQ message queues and Fetches queued messages data periodically
+#   * Identifies highest queued messages count and corresponding queue
+#   * Displays total queued messages count and highest queued queue details
+#   * Accepts parameters for API URL, credentials, sleep interval, and filtering option
 #
 #############################################################################################################################
 #
