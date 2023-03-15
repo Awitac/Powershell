@@ -1,0 +1,68 @@
+function Monitor-RabbitMQQueues {
+    param (
+        [string]$RabbitMQBaseUrl = "http://localhost:15672",
+        [string]$Username = "guest",
+        [string]$Password = "guest",
+        [int]$SleepIntervalSeconds = 1,
+        [bool]$ShowOnlyNonEmptyQueues = $true
+    )
+
+    # Encode the authentication string for the request header
+    $EncodedAuth = [System.Convert]::ToBase64String([System.Text.Encoding]::ASCII.GetBytes(("{0}:{1}" -f $Username,$Password)))
+    $Headers = @{
+        "Authorization" = "Basic $EncodedAuth"
+    }
+
+    # Set the API endpoint for the queues
+    $Url = $RabbitMQBaseUrl + "/api/queues?columns=name,messages"
+
+    # Print the headers
+    Write-Host " Time                 TotalCount         Highest Queued Queue                                                           Count "
+    Write-Host "------               ------------     --------------------------                                                       -------"
+
+    # Start the loop
+    while ($true) {
+        try {
+            # Fetch the queues from the API
+            $Queues = Invoke-RestMethod -Method Get -Uri $Url -Headers $Headers
+
+            # Initialize variables
+            $TotalQueuedMessages = 0
+            $HighestQueuedQueue = $null
+            $HighestQueuedMessages = 0
+
+            # Iterate through the queues to calculate the total queued messages and the highest queued messages
+            foreach ($Queue in $Queues) {
+                $QueuedMessages = $Queue.messages
+                $TotalQueuedMessages += $QueuedMessages
+
+                if ($QueuedMessages -gt $HighestQueuedMessages) {
+                    $HighestQueuedMessages = $QueuedMessages
+                    $HighestQueuedQueue = $Queue.name
+                }
+            }
+
+            # Get the current date and time
+            $dateTime = Get-Date -Format "yyyy/MM/dd HH:mm:ss"
+
+            if (!$ShowOnlyNonEmptyQueues -or ($ShowOnlyNonEmptyQueues -and $HighestQueuedMessages -gt 0)) {
+                $FormattedOutput = "$dateTime {0,8:N0}{1,2}    |    {2,-75} {3,8:N0}{4,2}" -f $TotalQueuedMessages,"", $HighestQueuedQueue, $HighestQueuedMessages,""
+            } else {
+                $FormattedOutput = "$dateTime {0,8:N0}{1,2}    |    N/A`t`t`t`t`t`t`t`t`t`t`t`t`t`t`t`t`t`t`t     N/A" -f $TotalQueuedMessages,""
+            }
+
+            # Print the formatted output
+            Write-Host $FormattedOutput
+            Out-File -FilePath C:\Awitac_Log_RabbitMQ_Queued.txt -InputObject $FormattedOutput -Encoding ASCII -append
+        }
+        catch {
+            Write-Host "Error fetching queue information. Please check your RabbitMQ settings and connectivity."
+        }
+
+        # Sleep for the specified interval
+        Start-Sleep -Seconds $SleepIntervalSeconds
+    }
+}
+
+# Call the function with default parameters
+Monitor-RabbitMQQueues
