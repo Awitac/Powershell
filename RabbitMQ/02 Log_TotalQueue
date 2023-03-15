@@ -1,4 +1,13 @@
-function Monitor-RabbitMQQueues {
+# Creatated by Awitac 
+# Changes                                                                                                   ES/SA 2023-03-15
+#
+#############################################################################################################################
+#
+
+#
+#############################################################################################################################
+#
+#function Monitor-RabbitMQQueues {
     param (
         [string]$RabbitMQBaseUrl = "http://localhost:15672",
         [string]$Username = "guest",
