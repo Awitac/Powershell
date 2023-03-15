@@ -3,7 +3,10 @@
 #
 #############################################################################################################################
 #
-
+#  * Monitors RabbitMQ message queues and Fetches queued messages data periodically
+#  * Identifies highest queued messages count and corresponding queue
+#  * Displays total queued messages count and highest queued queue details
+#  * Accepts parameters for API URL, credentials, sleep interval, and filtering option
 #
 #############################################################################################################################
 #
@@ -26,8 +29,8 @@
     $Url = $RabbitMQBaseUrl + "/api/queues?columns=name,messages"
 
     # Print the headers
-    Write-Host " Time                 TotalCount         Highest Queued Queue                                                           Count "
-    Write-Host "------               ------------     --------------------------                                                       -------"
+    Write-Host " Time                 TotalCount     Highest Queued Queue                                                             Count "
+    Write-Host "-------------------  ------------   ----------------------------------------------------------------------------     -------"
 
     # Start the loop
     while ($true) {
@@ -55,9 +58,9 @@
             $dateTime = Get-Date -Format "yyyy/MM/dd HH:mm:ss"
 
             if (!$ShowOnlyNonEmptyQueues -or ($ShowOnlyNonEmptyQueues -and $HighestQueuedMessages -gt 0)) {
-                $FormattedOutput = "$dateTime {0,8:N0}{1,2}    |    {2,-75} {3,8:N0}{4,2}" -f $TotalQueuedMessages,"", $HighestQueuedQueue, $HighestQueuedMessages,""
+                $FormattedOutput = "$dateTime {0,8:N0}{1,2}  |    {2,-75} {3,8:N0}{4,2}" -f $TotalQueuedMessages,"", $HighestQueuedQueue, $HighestQueuedMessages,""
             } else {
-                $FormattedOutput = "$dateTime {0,8:N0}{1,2}    |    N/A`t`t`t`t`t`t`t`t`t`t`t`t`t`t`t`t`t`t`t     N/A" -f $TotalQueuedMessages,""
+                $FormattedOutput = "$dateTime {0,8:N0}{1,2}  |    N/A`t`t`t`t`t`t`t`t`t`t`t`t`t`t`t`t`t`t`t   N/A" -f $TotalQueuedMessages,""
             }
 
             # Print the formatted output
@@ -71,7 +74,6 @@
         # Sleep for the specified interval
         Start-Sleep -Seconds $SleepIntervalSeconds
     }
-}
 
 # Call the function with default parameters
 Monitor-RabbitMQQueues
