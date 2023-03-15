@@ -1,6 +1,3 @@
-# Creatated by Awitac 
-# Changes                                                                                                   ES/SA 2023-03-15
-#
 #############################################################################################################################
 #
 #   * Encodes authentication string for the request header
@@ -19,13 +16,15 @@ function Monitor-RabbitMQMessageRate {
         [string]$RabbitMQBaseUrl = "http://localhost:15672",
         [string]$Username = "admin",
         [string]$Password = "changeme",
-        [int]$SleepIntervalSeconds = 1
+        [int]$SleepIntervalSeconds = 1,
+        [string]$LogFilePath = "C:\Awitac_Log_RabbitMQ_Rate.txt"
     )
 
     # Encode the authentication string for the request header
     $EncodedAuth = [System.Convert]::ToBase64String([System.Text.Encoding]::ASCII.GetBytes(("{0}:{1}" -f $Username,$Password)))
     $Headers = @{
         "Authorization" = "Basic $EncodedAuth"
+        "Content-Type"  = "application/json"
     }
 
     # Set the API endpoint for the queues
@@ -39,7 +38,7 @@ function Monitor-RabbitMQMessageRate {
     while ($true) {
         try {
             # Fetch the queues from the API
-            $Queues = Invoke-RestMethod -Method Get -Uri $Url -Headers $Headers
+            $Queues = Invoke-RestMethod -Method Get -Uri $Url -Headers $Headers -ErrorAction Stop
 
             # Initialize variables
             $TotalMessageRate = 0
@@ -65,7 +64,7 @@ function Monitor-RabbitMQMessageRate {
 
             # Print the formatted output
             Write-Host $FormattedOutput
-            Out-File -FilePath C:\Awitac_Log_RabbitMQ_Rate.txt -InputObject $FormattedOutput -Encoding ASCII -append
+            Out-File -FilePath $LogFilePath -InputObject $FormattedOutput -Encoding ASCII -Append
         }
         catch {
             Write-Host "Error fetching queue information. Please check your RabbitMQ settings and connectivity."
