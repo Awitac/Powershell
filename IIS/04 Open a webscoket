@@ -1,9 +1,9 @@
-# WebSocket URL
-$url = "wss://cluster2-axess.awitaclab.local/websocket"
-$ct = [System.Threading.CancellationToken]::None
-
-# Continuously connect and receive messages
-while ($true) {
+function Test-WebSocket {
+    param(
+        [string]$url
+    )
+    
+    $ct = [System.Threading.CancellationToken]::None
     $websocket = New-Object System.Net.WebSockets.ClientWebSocket
 
     try {
@@ -20,9 +20,30 @@ while ($true) {
         Write-Host " $receivedData" -ForegroundColor Green
     } catch {
         Write-Host "Error: $_" -ForegroundColor Red
+        if ($_.Exception.InnerException) {
+            Write-Host "Inner Exception: $($_.Exception.InnerException)" -ForegroundColor Red
+        }
     } finally {
         $websocket.Dispose()
     }
-
-    Start-Sleep -Seconds 1
 }
+
+do {
+    # Prompt user for the URL and port
+    Write-Host "Enter a websocket url to test the connection, example: cluster2-axess.awitaclab.local" -ForegroundColor Yellow
+    $hostName = Read-Host -Prompt "Enter the URL (without 'wss://' or '/websocket')" 
+    Write-Host "Example: 443 (leave empty for default 443)"
+    $port = Read-Host -Prompt "Enter the port"
+
+    if (-not $port) {
+        $port = 443
+    }
+
+    $url = "wss://${hostName}:${port}/websocket"
+
+    Test-WebSocket -url $url
+
+    $continue = Read-Host -Prompt "Press Enter to test another WebSocket server or type 'exit' to quit"
+} while ($continue -ne 'exit')
+
+   
