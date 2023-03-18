@@ -1,0 +1,28 @@
+# WebSocket URL
+$url = "wss://cluster2-axess.awitaclab.local/websocket"
+$ct = [System.Threading.CancellationToken]::None
+
+# Continuously connect and receive messages
+while ($true) {
+    $websocket = New-Object System.Net.WebSockets.ClientWebSocket
+
+    try {
+        $uri = New-Object System.Uri($url)
+        $websocket.ConnectAsync($uri, $ct).Wait()
+        $buffer = New-Object System.Byte[] 1024
+        $segment = New-Object System.ArraySegment[Byte] -ArgumentList @(,$buffer)
+        $result = $websocket.ReceiveAsync($segment, $ct).Result
+        $receivedData = [System.Text.Encoding]::UTF8.GetString($buffer, 0, $result.Count)
+
+        # Display the received message with a timestamp and color
+        $timestamp = Get-Date -Format "yyyy-MM-dd HH:mm:ss"
+        Write-Host "[$timestamp] Received message:" -ForegroundColor Cyan -NoNewline
+        Write-Host " $receivedData" -ForegroundColor Green
+    } catch {
+        Write-Host "Error: $_" -ForegroundColor Red
+    } finally {
+        $websocket.Dispose()
+    }
+
+    Start-Sleep -Seconds 1
+}
