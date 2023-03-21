@@ -1,3 +1,7 @@
+# Creatated by Awitac 
+# Changes                                                                                                    ES/SA 2023-03-22
+#
+#############################################################################################################################
 # Part 1: Retrieve SSL certificate bindings and save the output to a file
 # Get the bindings
 $bindings = netsh http show sslcert
