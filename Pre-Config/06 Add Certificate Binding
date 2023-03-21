@@ -37,15 +37,13 @@ while (-not $validPort) {
     try {
         Write-Host -NoNewline -ForegroundColor Yellow "Enter the Port number (1-65535): "
         $port = Read-Host
-        $port = [int]$port
-        if ($port -ge 1 -and $port -le 65535) {
-            if (-not (netsh http show sslcert | Where-Object { $_ -match "IP:port\s+: 0.0.0.0:$port" })) {
-                $validPort = $true
-            } else {
-                throw "Port $port is already in use in a certificate binding"
-            }
+        if ($port -as [int] -lt 1 -or $port -as [int] -gt 65535) {
+            throw "Port is not allowed. Port needs to be between 1 and 65535"
+        }
+        if (-not (netsh http show sslcert | Where-Object { $_ -match "IP:port\s+: 0.0.0.0:$port" })) {
+            $validPort = $true
         } else {
-            throw "Port number must be between 1 and 65535"
+            throw "Port $port is already in use in a certificate binding."
         }
     } catch {
         Write-Host "Error: $_" -ForegroundColor Red
@@ -84,13 +82,15 @@ Start-Sleep -Seconds 2
 
 
 # Part 3: Delete the output file
-if (Test-Path "C:\outputSSL.txt") {
+$detelefile = Test-Path "C:\outputSSL.txt"
+$deletefilepath = "C:\outputSSL.txt"
+if ($detelefile) {
     try {
-        Remove-Item -Path "C:\outputSSL.txt" -Force
-        Write-Host "Output file deleted." -ForegroundColor Yellow
+        Remove-Item -Path $deletefilepath -Force
+        Write-Host "File $deletefilepath deleted" -ForegroundColor Yellow
     } catch {
         Write-Host "Error: $_"
     }
 } else {
-    Write-Host "Output file not found." -ForegroundColor Yellow
+    Write-Host "File $deletefilepath not found" -ForegroundColor Red
 }
