@@ -3,11 +3,13 @@
 #
 #############################################################################################################################
 #
-#   * 
-#   *
+#   * Script sends a POST request to a specified URL with a JSON body containing empty data
+#   * Script checks the response status code, converts the response content to JSON format
+#   * Displays the output in a grid view
 #
 #############################################################################################################################
 #
+# Define the URL, request body, and headers
 $url = "https://cluster4-axess.awitaclab.local/axess/SystemManagerService.svc/VerifySiteUrl"
 $body = "{}"
 $headers = @{
@@ -15,11 +17,13 @@ $headers = @{
     "Authorization" = "PC Principal"
 }
 
+# Check if the request body is in the correct format
 if ($body -notmatch "^\{.*\}$") {
     Write-Output "Error: Invalid input data format"
     return
 }
 
+# Send the POST request and check the response status code
 $request = @{
     Method = "POST"
     Uri = $url
@@ -32,12 +36,15 @@ if ($response.StatusCode -ne 200) {
     Write-Output "Error: $($response.StatusCode)"
     return
 }
+
+# Convert the response content to JSON format and check if it is valid
 $json = $response.Content | ConvertFrom-Json -ErrorAction SilentlyContinue
 if ($json -eq $null) {
     Write-Output "Error: Invalid response format"
     return
 }
 
+# Create an output object with the response status code and JSON properties
 $output = @{
     "Response code" = $response.StatusCode
 }
@@ -46,9 +53,12 @@ foreach ($property in $json.PSObject.Properties) {
     $output[$property.Name] = $property.Value
 }
 
+# Check if there is any output to display
 if ($output.Count -eq 1) {
     Write-Output "No output received"
     return
 }
 
+# Display the output in a grid view
 $output | Out-GridView
+
