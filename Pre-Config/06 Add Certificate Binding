@@ -28,7 +28,6 @@ Invoke-Item "C:\outputSSL.txt"
 
 
 # Part 2: Add a new SSL certificate binding
-
 # Prompt user for input
 $validThumbprint = $false
 while (-not $validThumbprint) {
