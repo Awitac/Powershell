@@ -3,22 +3,26 @@
 #
 #############################################################################################################################
 #
-#   * 
-#   *
+#   * PowerShell script tests a WebSocket connection to a specified URL and port 
+#   * It uses the .NET ClientWebSocket class to connect to the WebSocket and receive a message
 #
 #############################################################################################################################
 #
+# Define a function to test the WebSocket connection
 function Test-WebSocket {
     param(
         [string]$url
     )
-    
+
+    # Create a ClientWebSocket object and connect to the WebSocket
     $ct = [System.Threading.CancellationToken]::None
     $websocket = New-Object System.Net.WebSockets.ClientWebSocket
 
     try {
         $uri = New-Object System.Uri($url)
         $websocket.ConnectAsync($uri, $ct).Wait()
+
+        # Receive a message from the WebSocket and convert it to a string
         $buffer = New-Object System.Byte[] 1024
         $segment = New-Object System.ArraySegment[Byte] -ArgumentList @(,$buffer)
         $result = $websocket.ReceiveAsync($segment, $ct).Result
@@ -29,18 +33,21 @@ function Test-WebSocket {
         Write-Host "[$timestamp] Received message:" -ForegroundColor Cyan -NoNewline
         Write-Host " $receivedData" -ForegroundColor Green
     } catch {
+        # Handle errors and display error messages
         Write-Host "Error: $_" -ForegroundColor Red
         if ($_.Exception.InnerException) {
             Write-Host "Inner Exception: $($_.Exception.InnerException)" -ForegroundColor Red
         }
     } finally {
+        # Dispose the ClientWebSocket object
         $websocket.Dispose()
     }
 }
 
+# Loop to test multiple WebSocket connections
 do {
     # Prompt user for the URL and port
-    Write-Host "Enter a websocket url to test the connection, example: cluster2-axess.awitaclab.local" -ForegroundColor Yellow
+    Write-Host "Enter a WebSocket URL to test the connection, example: cluster2-axess.awitaclab.local" -ForegroundColor Yellow
     $hostName = Read-Host -Prompt "Enter the URL (without 'wss://' or '/websocket')" 
     Write-Host "Example: 443 (leave empty for default 443)"
     $port = Read-Host -Prompt "Enter the port"
@@ -51,9 +58,10 @@ do {
 
     $url = "wss://${hostName}:${port}/websocket"
 
+    # Call the Test-WebSocket function with the specified URL and port
     Test-WebSocket -url $url
 
+    # Prompt user to test another WebSocket or exit the script
     $continue = Read-Host -Prompt "Press Enter to test another WebSocket server or type 'exit' to quit"
 } while ($continue -ne 'exit')
 
-   
