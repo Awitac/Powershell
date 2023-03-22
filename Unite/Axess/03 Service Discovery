@@ -1,0 +1,99 @@
+Add-Type -AssemblyName PresentationFramework
+Add-Type -AssemblyName System.Windows.Forms
+
+[xml]$XAML = @"
+<Window xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="API Response Viewer" Height="400" Width="800">
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition/>
+        </Grid.RowDefinitions>
+        <Grid Grid.Row="0" Margin="5">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="Auto"/>
+                <ColumnDefinition Width="Auto"/>
+                <ColumnDefinition Width="Auto"/>
+                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="Auto"/>
+            </Grid.ColumnDefinitions>
+            <TextBlock Grid.Column="0" Text="Response:" FontWeight="Bold" Margin="5,0,5,0"/>
+            <Button Name="PauseResumeButton" Grid.Column="1" Content="Pause" Width="100" Margin="5,0,0,0"/>
+            <Button Name="ExportButton" Grid.Column="2" Content="Export" Width="100" Margin="5,0,0,0"/>
+            <Button Name="ExitButton" Grid.Column="4" Content="Exit" Width="100" Margin="5,0,0,0"/>
+        </Grid>
+        <TextBox Grid.Row="1" Name="ResponseTextBox" IsReadOnly="True" TextWrapping="Wrap" AcceptsReturn="True" ScrollViewer.VerticalScrollBarVisibility="Auto" Margin="5"/>
+    </Grid>
+</Window>
+"@
+
+
+$reader = (New-Object System.Xml.XmlNodeReader $XAML)
+$Window = [Windows.Markup.XamlReader]::Load($reader)
+
+$ResponseTextBox = $Window.FindName("ResponseTextBox")
+$PauseResumeButton = $Window.FindName("PauseResumeButton")
+$ExportButton = $Window.FindName("ExportButton")
+$ExitButton = $Window.FindName("ExitButton")
+
+function UpdateResponse {
+    $url = "https://cluster4-axess.awitaclab.local/axess/SystemManagerService.svc/Discovery"
+    $body = "{}"
+    $headers = @{
+        "Content-Type" = "application/json"
+    }
+
+    $request = @{
+        Method = "POST"
+        Uri = $url
+        Headers = $headers
+        Body = $body
+    }
+
+    $response = Invoke-WebRequest @request
+    $timestamp = Get-Date -Format "yyyy-MM-dd HH:mm:ss"
+    
+    $jsonResponse = $response.Content | ConvertFrom-Json | ConvertTo-Json -Depth 10
+
+    $ResponseTextBox.Dispatcher.Invoke([action]{
+        $ResponseTextBox.Text = "Timestamp: $timestamp`r`nResponse code: $($response.StatusCode)`r`n`r`nResponse body:`r`n$jsonResponse"
+    }, "Normal")
+}
+
+$timer = New-Object System.Windows.Threading.DispatcherTimer
+$timer.Interval = [TimeSpan]::FromSeconds(5)
+$timer.Add_Tick({ UpdateResponse })
+$timer.Start()
+
+$PauseResumeButton.Add_Click({
+    if ($timer.IsEnabled) {
+        $timer.Stop()
+        $PauseResumeButton.Content = "Resume"
+    } else {
+        $timer.Start()
+        $PauseResumeButton.Content = "Pause"
+    }
+})
+
+$ExportButton.Add_Click({
+    $saveFileDialog = New-Object System.Windows.Forms.SaveFileDialog
+    $saveFileDialog.Filter = "Text Files (*.txt)|*.txt|All Files (*.*)|*.*"
+    $saveFileDialog.DefaultExt = "txt"
+    $saveFileDialog.ShowDialog() | Out-Null
+    $filename = $saveFileDialog.FileName
+    if ($filename) {
+        $ResponseTextBox.Text | Set-Content -Path $filename
+    }
+})
+
+$ExitButton.Add_Click({
+    $timer.Stop()
+    $Window.Close()
+})
+
+UpdateResponse
+
+$Window.ShowDialog() | Out-Null
+
+
