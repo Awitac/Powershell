@@ -3,9 +3,9 @@
 #
 #############################################################################################################################
 #
-#   * Retrieves and saves SSL certificate bindings to a file.
-#   * Adds a new SSL certificate binding after validating user input.
-#   * Deletes the output file.
+#   * Retrieves and saves SSL certificate bindings to a file
+#   * Adds a new SSL certificate binding after validating user input
+#   * Deletes the output file
 #   * Deletes an SSL certificate binding after validating user input
 #
 #############################################################################################################################
