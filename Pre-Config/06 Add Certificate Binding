@@ -28,6 +28,7 @@ Invoke-Item "C:\outputSSL.txt"
 
 
 # Part 2: Add a new SSL certificate binding
+
 # Prompt user for input
 $validThumbprint = $false
 while (-not $validThumbprint) {
@@ -78,6 +79,7 @@ while (-not $validAppId) {
     }
 }
 
+# Add the new SSL certificate binding
 try {
     netsh http add sslcert ipport=0.0.0.0:$port certhash=$certificateThumbprint appid=$applicationId clientcertnegotiation=disable
     
