@@ -104,3 +104,61 @@ if ($detelefile) {
 } else {
     Write-Host "File $deletefilepath not found" -ForegroundColor Red
 }
+
+# Part 4
+$deleteBinding = $false
+$deletedPorts = @()
+
+while (-not $deleteBinding) {
+    try {
+        # Prompt user to delete binding
+        Write-Host -NoNewline -ForegroundColor Yellow "Do you want to delete an SSL certificate binding? Enter Y to delete or N to exit the script (Y/N): "
+        $response = Read-Host
+
+        if ($response -eq "Y") {
+            $portValid = $false
+            
+            while (-not $portValid) {
+                # Prompt user to enter port number
+                Write-Host -NoNewline -ForegroundColor Yellow "Enter the Port number of the binding you want to delete (1-65535): "
+                $port = Read-Host
+
+                # Check if port number is valid
+                if ([int]::TryParse($port, [ref]$null) -and ([int]$port -ge 1 -and [int]$port -le 65535)) {
+                    # Check if port has already been deleted
+                    if ($deletedPorts -contains $port) {
+                        Write-Host -ForegroundColor Red "Port $port has already been deleted."
+                    } else {
+                        # Check if port is bound
+                        $result = & netsh.exe http show sslcert ipport=0.0.0.0:$port
+
+                        if ($result -match "SSL Certificate bindings") {
+                            $portValid = $true
+
+                            # Delete binding
+                            & netsh.exe http delete sslcert ipport=0.0.0.0:$port
+                            Write-Host -ForegroundColor Green "SSL certificate binding for port $port has been deleted."
+                            $deletedPorts += $port
+                        } else {
+                            # Port is not bound to a certificate
+                            Write-Host -ForegroundColor Red "Port $port does not have a certificate binding."
+                        }
+                    }
+                } else {
+                    # Invalid port number
+                    Write-Host -ForegroundColor Red "Please enter a valid port number between 1-65535."
+                }
+            }
+        } elseif ($response -eq "N") {
+            # Exit script
+            Write-Host -ForegroundColor Green "Exiting script."
+            $deleteBinding = $true
+        } else {
+            # Invalid response
+            Write-Host -ForegroundColor Red "Invalid response. Enter Y to delete or N to exit the script (Y/N)."
+        }
+    } catch {
+        # Other error occurred
+        Write-Host -ForegroundColor Red $_.Exception.Message
+    }
+}
