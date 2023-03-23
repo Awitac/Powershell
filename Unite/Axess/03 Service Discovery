@@ -1,12 +1,14 @@
+# Part 1
 Add-Type -AssemblyName PresentationFramework
 Add-Type -AssemblyName System.Windows.Forms
 
 [xml]$XAML = @"
 <Window xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-        Title="API Response Viewer" Height="400" Width="800">
+        Title="Awitac Axess Discovery Viewer" Height="400" Width="800">
     <Grid>
         <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
             <RowDefinition Height="Auto"/>
             <RowDefinition/>
         </Grid.RowDefinitions>
@@ -15,15 +17,37 @@ Add-Type -AssemblyName System.Windows.Forms
                 <ColumnDefinition Width="Auto"/>
                 <ColumnDefinition Width="Auto"/>
                 <ColumnDefinition Width="Auto"/>
-                <ColumnDefinition Width="*"/>
                 <ColumnDefinition Width="Auto"/>
+                <ColumnDefinition Width="*"/>
             </Grid.ColumnDefinitions>
             <TextBlock Grid.Column="0" Text="Response:" FontWeight="Bold" Margin="5,0,5,0"/>
-            <Button Name="PauseResumeButton" Grid.Column="1" Content="Pause" Width="100" Margin="5,0,0,0"/>
-            <Button Name="ExportButton" Grid.Column="2" Content="Export" Width="100" Margin="5,0,0,0"/>
-            <Button Name="ExitButton" Grid.Column="4" Content="Exit" Width="100" Margin="5,0,0,0"/>
+            <Border BorderBrush="Black" BorderThickness="1" Grid.Column="1">
+                <TextBlock Name="ResponseCodeTextBlock" Margin="5,0,0,0" Width="60"/>
+            </Border>
+            <Button Name="PauseResumeButton" Grid.Column="2" Content="Pause" Width="100" Margin="5,0,0,0"/>
+            <Button Name="ExportButton" Grid.Column="3" Content="Export" Width="100" Margin="5,0,0,0"/>
+            <Grid Grid.Column="4">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="Auto"/>
+                </Grid.ColumnDefinitions>
+                <Grid Grid.Column="1">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*"/>
+                    </Grid.ColumnDefinitions>
+                    <Button Name="ExitButton" Content="Exit" Width="100" Margin="5,0,0,0"/>
+                </Grid>
+            </Grid>
         </Grid>
-        <TextBox Grid.Row="1" Name="ResponseTextBox" IsReadOnly="True" TextWrapping="Wrap" AcceptsReturn="True" ScrollViewer.VerticalScrollBarVisibility="Auto" Margin="5"/>
+        <Grid Grid.Row="1" Margin="5">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="Auto"/>
+                <ColumnDefinition Width="*"/>
+            </Grid.ColumnDefinitions>
+            <TextBlock Grid.Column="0" Text="URL:" FontWeight="Bold" Margin="5,0,5,0"/>
+            <TextBox Name="UrlTextBox" Grid.Column="1" Margin="5,0,0,0" MinWidth="200"/>
+        </Grid>
+        <TextBox Grid.Row="2" Name="ResponseTextBox" IsReadOnly="True" TextWrapping="Wrap" AcceptsReturn="True" ScrollViewer.VerticalScrollBarVisibility="Auto" Margin="5"/>
     </Grid>
 </Window>
 "@
@@ -33,12 +57,34 @@ $reader = (New-Object System.Xml.XmlNodeReader $XAML)
 $Window = [Windows.Markup.XamlReader]::Load($reader)
 
 $ResponseTextBox = $Window.FindName("ResponseTextBox")
-$PauseResumeButton = $Window.FindName("PauseResumeButton")
+$ResponseCodeTextBlock = $Window.FindName("ResponseCodeTextBlock")
+$UrlTextBox = $Window.FindName("UrlTextBox")
 $ExportButton = $Window.FindName("ExportButton")
+$PauseResumeButton = $Window.FindName("PauseResumeButton")
 $ExitButton = $Window.FindName("ExitButton")
 
+$UrlReady = $false
+
+$previousResponse = ""
+
 function UpdateResponse {
-    $url = "https://cluster4-axess.awitaclab.local/axess/SystemManagerService.svc/Discovery"
+    if (-not $UrlReady -or $UrlTextBox.Text.Trim() -eq "") {
+        return
+    }
+
+    $baseUrl = $UrlTextBox.Text.Trim()
+
+    if ($baseUrl -eq "") {
+        return
+    }
+
+    if ($baseUrl.StartsWith("https:/")) {
+        $baseUrl = $baseUrl -replace "^https:/", "https://"
+    } elseif (-not $baseUrl.StartsWith("https://")) {
+        $baseUrl = "https://$baseUrl"
+    }
+
+    $url = "$baseUrl/axess/SystemManagerService.svc/Discovery"
     $body = "{}"
     $headers = @{
         "Content-Type" = "application/json"
@@ -51,27 +97,42 @@ function UpdateResponse {
         Body = $body
     }
 
-    $response = Invoke-WebRequest @request
-    $timestamp = Get-Date -Format "yyyy-MM-dd HH:mm:ss"
-    
-    $jsonResponse = $response.Content | ConvertFrom-Json | ConvertTo-Json -Depth 10
+    try {
+        $response = Invoke-WebRequest @request
+        $timestamp = Get-Date -Format "yyyy-MM-dd HH:mm:ss"
+        $responseCode = $response.StatusCode
 
-    $ResponseTextBox.Dispatcher.Invoke([action]{
-        $ResponseTextBox.Text = "Timestamp: $timestamp`r`nResponse code: $($response.StatusCode)`r`n`r`nResponse body:`r`n$jsonResponse"
-    }, "Normal")
+        $jsonResponse = $response.Content | ConvertFrom-Json | ConvertTo-Json -Depth 10
+
+        $currentResponse = "Timestamp: $timestamp`r`nResponse code: $responseCode`r`n`r`nResponse body:`r`n$jsonResponse"
+
+        if ($currentResponse -ne $previousResponse) {
+            $ResponseTextBox.Dispatcher.Invoke([action]{
+                $ResponseTextBox.Text = $currentResponse
+            }, "Normal")
+
+            $ResponseCodeTextBlock.Dispatcher.Invoke([action]{
+                $ResponseCodeTextBlock.Text = $responseCode.ToString()
+            }, "Normal")
+
+            $previousResponse = $currentResponse
+        }
+    } catch {
+        $ResponseTextBox.Dispatcher.Invoke([action]{
+            $ResponseTextBox.Text = "Error: " + $_.Exception.Message
+        }, "Normal")
+    }
 }
 
-$timer = New-Object System.Windows.Threading.DispatcherTimer
-$timer.Interval = [TimeSpan]::FromSeconds(5)
-$timer.Add_Tick({ UpdateResponse })
-$timer.Start()
+$UpdateTimer.Start() 
 
+$PauseResumeButton = $Window.FindName("PauseResumeButton")
 $PauseResumeButton.Add_Click({
-    if ($timer.IsEnabled) {
-        $timer.Stop()
+    if ($UpdateTimer.IsEnabled) {
+        $UpdateTimer.Stop()
         $PauseResumeButton.Content = "Resume"
     } else {
-        $timer.Start()
+        $UpdateTimer.Start()
         $PauseResumeButton.Content = "Pause"
     }
 })
@@ -88,12 +149,14 @@ $ExportButton.Add_Click({
 })
 
 $ExitButton.Add_Click({
-    $timer.Stop()
     $Window.Close()
 })
 
-UpdateResponse
+$UrlTextBox.Add_KeyDown({
+    if ($_.Key -eq "Enter") {
+        $UrlReady = $true
+        UpdateResponse
+    }
+})
 
 $Window.ShowDialog() | Out-Null
-
-
