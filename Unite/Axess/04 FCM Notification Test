@@ -1,0 +1,42 @@
+# Define the FCM API endpoint
+$FCMEndpoint = "https://fcm.googleapis.com/fcm/send"
+
+# Define the FCM server key
+$FCMServerKey = "FCM server key"
+
+# Define the FCM sender ID
+$FCMSenderID = "FCM sender ID"
+
+# Define the FCM device token
+$FCMDeviceToken = "FCM device token"
+
+# Get Server/Client name
+$ServerName = $($env:COMPUTERNAME)
+
+# Define the current date and time
+$CurrentDateTime = Get-Date -Format "yyyy-MM-dd HH:mm:ss"
+
+# Define the notification payload
+$NotificationPayload = @{
+    notification = @{
+        title = "FCM test from PowerShell"
+        body = "$CurrentDateTime`nFrom: $ServerName"
+    }
+    to = $FCMDeviceToken
+}
+
+# Convert the payload to JSON
+$NotificationPayloadJSON = $NotificationPayload | ConvertTo-Json
+
+# Define the FCM request headers
+$FCMHeaders = @{
+    "Authorization" = "Bearer $FCMServerKey"
+    "Content-Type" = "application/json"
+    "project_id" = $FCMSenderID
+}
+
+# Send the FCM request
+$FCMResponse = Invoke-RestMethod -Uri $FCMEndpoint -Method Post -Headers $FCMHeaders -Body $NotificationPayloadJSON
+
+# Output the FCM response
+Write-Output $FCMResponse
