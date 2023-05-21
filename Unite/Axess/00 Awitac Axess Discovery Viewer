@@ -86,535 +86,96 @@ The functions are:
 - Takes an $errorMessage string as an argument and constructs an error message using it.
 - Calls the DisplayErrorMessage function to display the error message.
 #>
-# Constructs the base URL for a request.
-function GetBaseUrl {
-    param(
-        [string]$userUrl,
-        [string]$endpoint
-    )
-    # If $userUrl is empty, return null.
-    if ($userUrl -eq "") {
-        return $null
-    }
-    
-    # Check if any of the checkboxes are checked and call the appropriate function.
-    if ($CheckBox1.IsChecked) {
-        return GetDiscoveryUrl($userUrl)
-    } elseif ($CheckBox2.IsChecked) {
-        return GetVerifySiteUrl($userUrl)
-    } elseif ($CheckBox3.IsChecked) {
-        SendAndReceiveWebSocket
-        return $null
-    } elseif ($CheckBox4.IsChecked) {
-        GetCertificate
-        return $null
-    }
-    
-    # If the endpoint is not "WebSocket" and the URL does not start with "https://", add "https://" to the beginning of the URL.
-    if ($endpoint -ne "WebSocket" -and -not $userUrl.StartsWith("https://")) {
-        if ($userUrl.StartsWith("http://")) {
-            $userUrl = "https://" + $userUrl.Substring(7)
-        } else {
-            $userUrl = "https://" + $userUrl
-        }
-    }
-    
-    # Construct the full URL with the endpoint if it is not null or empty, or return the userUrl if it is.
-    if (-not [string]::IsNullOrWhiteSpace($endpoint)) {
-        return $userUrl.TrimEnd('/') + "/axess/SystemManagerService.svc/$endpoint"
-    } else {
-        return $userUrl.TrimEnd('/')
-    }
-}
-
-# Constructs the request data for a request.
-function GetRequestData() {
-    # Set the method based on the selected value in the MethodComboBox.
-    $method = $MethodComboBox.SelectedItem.Content
-    
-    # Set the URL to the base URL.
-    $url = $baseUrl
-    
-    # Set the request body to an empty JSON object.
-    $body = "{}"
-    
-    # Set the request headers to include the Content-Type header with a value of "application/json".
-    $headers = @{
-        "Content-Type" = "application/json"
-    }
-    
-    # Construct a hashtable containing the request method, URL, headers, and body.
-    $request = @{
-        Method = $method
-        Uri = $url
-        Headers = $headers
-        Body = $body
-    }
-    
-    # If the CheckBox4 UI element is checked, set the request method to "POST".
-    if ($CheckBox4.IsChecked) {
-        $request.Method = "POST"
-    }
-    
-    # Return the request hashtable.
-    return $request
-}
-
-# Updates the response text box with the results of a request.
-function UpdateResponse {
-    # Get the user-specified URL and endpoint, and construct the base URL.
-    $userUrl = $UrlTextBox.Text.Trim()
-    $endpoint = ""
-    $baseUrl = GetBaseUrl $userUrl $endpoint
-    
-    # If the base URL is null, return without making a request.
-    if ($null -eq $baseUrl) {
-        return
-    }
-    
-    # Clear the response code value.
-    $ResponseCodeTextBlock.Text = ""
-    
-    # Get the request data.
-    $request = GetRequestData
-    
-    try {
-        # If the CheckBox4 UI element is checked, get the certificate and return without making a request.
-        if ($CheckBox4.IsChecked) {
-            GetCertificate
-            return
-        }
-        
-        # Send the request and process the response.
-        $response = Invoke-WebRequest @request -TimeoutSec 2
-        $timestamp = Get-Date -Format "yyyy-MM-dd HH:mm:ss"
-        $responseCode = $response.StatusCode
-        $jsonResponse = $response.Content | ConvertFrom-Json | ConvertTo-Json -Depth 10
-        $currentResponse = "Timestamp: $timestamp`r`nResponse code: $responseCode`r`n`r`nResponse body:`r`n$jsonResponse"
-        
-        # Validate the response data and update the UI elements accordingly.
-        if (ValidateRequestData $response) {
-            $ResponseTextBox.Dispatcher.Invoke([action]{
-                $ResponseTextBox.Text = $currentResponse
-            }, "Normal")
-            $ResponseCodeTextBlock.Dispatcher.Invoke([action]{
-                $ResponseCodeTextBlock.Text = $responseCode.ToString()
-            }, "Normal")
-            $StatusBarTextBlock.Dispatcher.Invoke([action]{
-                $StatusBarTextBlock.Text = "Data received successfully"
-            }, "Normal")
-        } elseif ($responseCode -ge 500) {
-            ThrowServerRequestError $response
-        } else {
-            ThrowInvalidResponseDataError
-        }
-    } catch [System.Net.WebException] {
-        ThrowNetworkConnectionError $_.Exception.Message
-    } catch [System.TimeoutException] {
-        ThrowTimeoutError
-    } catch {
-        ThrowError $_.Exception.Message
-    }
-}
-
-# Clears the text in three UI elements: ResponseTextBox, ResponseCodeTextBlock, and StatusBarTextBlock.
-function ClearDisplay() {
-    # Use the Dispatcher.Invoke method to set the Text property of each UI element to an empty string.
-    $ResponseTextBox.Dispatcher.Invoke([action]{
-        $ResponseTextBox.Text = ""
-    }, "Normal")
-    $ResponseCodeTextBlock.Dispatcher.Invoke([action]{
-        $ResponseCodeTextBlock.Text = ""
-    }, "Normal")
-    $StatusBarTextBlock.Dispatcher.Invoke([action]{
-        $StatusBarTextBlock.Text = ""
-    }, "Normal")
-}
-
-# Displays an error message in the user interface.
-function DisplayErrorMessage($errorMessage) {
-    # Construct a string that includes "Error: " and the provided $errorMessage string.
-    $currentResponse = "Error: $errorMessage"
-    
-    # Use the Dispatcher.Invoke method to update the ResponseTextBox UI element with the constructed error message.
-    $ResponseTextBox.Dispatcher.Invoke([action]{
-        $ResponseTextBox.Text = ""
-        $ResponseTextBox.Text = $currentResponse
-    }, "Normal")
-    
-    # Use the Dispatcher.Invoke method to clear the ResponseCodeTextBlock UI element.
-    $ResponseCodeTextBlock.Dispatcher.Invoke([action]{
-        $ResponseCodeTextBlock.Text = ""
-    }, "Normal")
-    
-    # Use the Dispatcher.Invoke method to update the StatusBarTextBlock UI element with an error message.
-    $StatusBarTextBlock.Dispatcher.Invoke([action]{
-        $StatusBarTextBlock.Text = ""
-        $StatusBarTextBlock.Text = "Error occurred while requesting data"
-    }, "Normal")
-}
-
-
-
-# Constructs the discovery URL for the specified URL.
-function GetDiscoveryUrl {
-    param(
-        [string]$userUrl
-    )
-    
-    # Set the endpoint to "Discovery".
-    $endpoint = "Discovery"
-    
-    # Add "https://" to the URL if it's missing.
-    if (-not $userUrl.StartsWith("https://")) {
-        if ($userUrl.StartsWith("http://")) {
-            $userUrl = "https://" + $userUrl.Substring(7)
-        } else {
-            $userUrl = "https://" + $userUrl
-        }
-    }
-    
-    # Construct the full URL with the "Discovery" endpoint.
-    $finalUrl = $userUrl.TrimEnd('/') + "/axess/SystemManagerService.svc/$endpoint"
-    
-    # Write the final URL to the console for debugging purposes.
-    Write-Host "Final URL: $finalUrl"
-    
-    # Return the discovery URL.
-    return $finalUrl
-}
-
-# Constructs the VerifySiteUrl for the specified URL.
-function GetVerifySiteUrl {
-    param(
-        [string]$userUrl
-    )
-    
-    # Set the endpoint to "VerifySiteUrl".
-    $endpoint = "VerifySiteUrl"
-    
-    # Add "https://" to the URL if it's missing.
-    if (-not $userUrl.StartsWith("https://")) {
-        if ($userUrl.StartsWith("http://")) {
-            $userUrl = "https://" + $userUrl.Substring(7)
-        } else {
-            $userUrl = "https://" + $userUrl
-        }
-    }
-    
-    # Construct the full URL with the "VerifySiteUrl" endpoint.
-    $finalUrl = $userUrl.TrimEnd('/') + "/axess/SystemManagerService.svc/$endpoint"
-    
-    # Write the final URL to the console for debugging purposes.
-    Write-Host "Final URL: $finalUrl"
-    
-    # Return the VerifySiteUrl.
-    return $finalUrl
-}
-
-# Sends and receives messages over a WebSocket connection.
-function SendAndReceiveWebSocket {
-    # Get the WebSocket URL from the input text box
-    $url = $UrlTextBox.Text.Trim()
-    
-    # Modify the URL to the WebSocket endpoint format
-    if ($url.StartsWith("http://")) { $url = "ws://" + $url.Substring(7) }
-    elseif ($url.StartsWith("https://")) { $url = "wss://" + $url.Substring(8) }
-    if ($url.EndsWith("/websocket")) { $url = $url.Substring(0, $url.Length - 9) }
-    $url += "/websocket"
-    if ($url.StartsWith("ws://")) { $url = $url.Replace("ws://", "wss://") }
-    elseif (!$url.StartsWith("wss://") -and !$url.StartsWith("ws://")) { $url = "wss://" + $url }
-    
-    # Create a new WebSocket client
-    $websocket = New-Object System.Net.WebSockets.ClientWebSocket
-    
-    # Set up a cancellation token for the connection timeout
-    $ct = [System.Threading.CancellationToken]::None
-    
-    # Clear the UI display
-    ClearDisplay
-    
-    # Connect to the WebSocket server
-    Write-Host "Final URL: $url"
-    try {
-        $uri = New-Object System.Uri($url)
-        $timeout = New-Object System.Threading.CancellationTokenSource(1500) # 1.5 second timeout
-        $websocket.ConnectAsync($uri, $timeout.Token).Wait()
-        
-        # Receive the WebSocket message and validate the response data
-        $buffer = New-Object System.Byte[] 1024
-        $segment = New-Object System.ArraySegment[Byte] -ArgumentList @(,$buffer)
-        $result = $websocket.ReceiveAsync($segment, $ct).Result
-        $receivedData = [System.Text.Encoding]::UTF8.GetString($buffer, 0, $result.Count)
-        if (ValidateRequestData $receivedData) {
-            # Update the UI with the received message
-            ClearDisplay
-            $ResponseTextBox.Dispatcher.Invoke([action]{
-                $ResponseTextBox.AppendText($receivedData)
-            }, "Normal")
-            $ResponseCodeTextBlock.Dispatcher.Invoke([action]{
-                $ResponseCodeTextBlock.Text = "200"
-            }, "Normal")
-            $StatusBarTextBlock.Dispatcher.Invoke([action]{
-                $StatusBarTextBlock.Text = "Channel Open"
-            }, "Normal")
-        } else {
-            ThrowInvalidWebSocketMessageError
-        }
-    } 
-    catch [System.TimeoutException] {
-        ThrowTimeoutError
-    } 
-    catch [System.Net.WebSockets.WebSocketException] {
-        # Handle different types of WebSocket exceptions
-        if ($_.Message -eq "The remote party closed the WebSocket connection without completing the close handshake.") {
-            ThrowWebSocketConnectionError "Remote party closed the WebSocket connection"
-        } elseif ($_.Message -match "HTTP/1.1 ([4-5]\d{2})") {
-            $errorCode = $Matches[1]
-            $errorMessage = "WebSocket Error: Server returned a $errorCode error"
-            [System.Windows.MessageBox]::Show($errorMessage, "Error", [System.Windows.MessageBoxButton]::OK, [System.Windows.MessageBoxImage]::Error)
-            ThrowWebSocketProcessingError $errorMessage
-        } else {
-            ThrowWebSocketProcessingError $_.Exception.Message
-        }
-    } 
-    catch [System.Exception] {
-        Write-Host "Error: $_"
-        ThrowWebSocketProcessingError $_.Exception.Message
-    } 
-    finally {
-        # Close and dispose of the WebSocket client
-        if ($websocket.State -eq 'Open') {
-            $websocket.CloseAsync('NormalClosure', [System.Net.WebSockets.WebSocketCloseStatus]::NormalClosure, $ct).Wait()
-        }
-        $websocket.Dispose()
-    }
-}
-
-# Retrieves the SSL certificate for a given URL and displays its details in the UI.
-function GetCertificate() {
-    # Get the URL from the UrlTextBox and remove any whitespace.
-    $userUrl = $UrlTextBox.Text.Trim()
-    
-    # If the URL starts with "http://", replace it with "https://".
-    if ($userUrl.StartsWith("http://")) {
-        $userUrl = $userUrl.Replace("http://", "https://")
-    }
-    
-    # If the URL starts with "https://", create a new Uri object with the URL.
-    # Otherwise, add "https://" to the beginning of the URL and create a new Uri object with the updated URL.
-    if ($userUrl.StartsWith("https://")) {
-        $uri = New-Object System.Uri($userUrl)
-    } else {
-        $uri = New-Object System.Uri("https://$userUrl")
-    }
-    
-    # Write the final URL to the console.
-    Write-Host "Final URL: $($uri.AbsoluteUri)"
-    
-    try {
-        # Call the GetCertificateDetails function to retrieve the SSL certificate details for the URL.
-        $certDetails = GetCertificateDetails $uri
-        
-        # Display the certificate details in the UI.
-        $ResponseTextBox.Dispatcher.Invoke([action]{
-            $ResponseTextBox.Text = $certDetails
-        }, "Normal")
-        $ResponseCodeTextBlock.Dispatcher.Invoke([action]{
-            $ResponseCodeTextBlock.Text = "200"
-        }, "Normal")
-        $StatusBarTextBlock.Dispatcher.Invoke([action]{
-            $StatusBarTextBlock.Text = "Certificate received successfully"
-        }, "Normal")
-    }
-    catch {
-        # Handle any errors that occur during the SSL connection or certificate retrieval.
-        $ResponseTextBox.Dispatcher.Invoke([action]{
-            $ResponseTextBox.Text = $_.Exception.Message
-        }, "Normal")
-        $ResponseCodeTextBlock.Dispatcher.Invoke([action]{
-            $ResponseCodeTextBlock.Text = $_.Exception.HResult
-        }, "Normal")
-        $StatusBarTextBlock.Dispatcher.Invoke([action]{
-            $StatusBarTextBlock.Text = "Error retrieving certificate"
-        }, "Normal")
-    }
-}
-
-# Retrieves the SSL certificate for a given URI and returns a string containing its details.
-function GetCertificateDetails($uri) {
-    # Get the hostname and port number from the URI.
-    $hostname = $uri.Host
-    $port = $uri.Port
-    $certObject = $null
-    try {
-        # Create a new TcpClient and connect to the specified hostname and port.
-        $tcpClient = New-Object System.Net.Sockets.TcpClient
-        $cancellationTokenSource = New-Object System.Threading.CancellationTokenSource
-        $cancellationTokenSource.CancelAfter(2000) # Set a 2-second timeout
-        $tcpClient.ConnectAsync($hostname, $port).Wait($cancellationTokenSource.Token)
-        
-        # If the connection is not successful, throw an error.
-        if (!$tcpClient.Connected) {
-            throw "Connection timed out"
-        }
-
-        # Create a new SslStream and authenticate it as a client with the specified hostname.
-        $sslStream = New-Object System.Net.Security.SslStream($tcpClient.GetStream())
-        $sslStream.AuthenticateAsClient($hostname)
-        
-        # Get the remote SSL certificate and create a new X509Certificate2 object from it.
-        $cert = $sslStream.RemoteCertificate
-        $certObject = New-Object System.Security.Cryptography.X509Certificates.X509Certificate2($cert)
-    }
-    finally {
-        # Dispose of the TcpClient and SslStream objects.
-        if ($sslStream) { $sslStream.Dispose() }
-        if ($tcpClient) { $tcpClient.Dispose() }
-    }
-    
-    if ($certObject) {
-        # Get the extensions and public key information from the certificate.
-        $extensions = "Extensions:`t $($certObject.Extensions.Oid.FriendlyName -join ', ')" + "`r`n"
-        $publicKeyTypeName = $certObject.PublicKey.Key.GetType().Name
-        $publicKey = "Public Key Type:`t $publicKeyTypeName`r`n"
-
-        switch ($publicKeyTypeName) {
-            # If the public key is RSA, add the RSA public key to the string.
-            "RSA" {
-                $publicKey += "Public Key:`t `t $($certObject.PublicKey.GetRSAPublicKey().ToXmlString($true))`r`n"
-            }
-            # If the public key is ECDsa, add the ECDsa public key and signature algorithm to the string.
-            "ECDsa" {
-                $publicKey += "Public Key:`t `t $($certObject.PublicKey.GetECDsaPublicKey().ToXmlString($true))`r`n"
-                $publicKey += "SHA Version:`t $($certObject.SignatureAlgorithm.FriendlyName)`r`n"
-            }
-        }
-        # Construct a string that contains all of the certificate's properties.
-        $certDetails = "URL:`t`t $uri`r`n" +
-                       "`r`n" + # empty line 
-                       "Subject:`t`t $($certObject.Subject)`r`n" +
-                       "Issuer:`t`t $($certObject.Issuer)`r`n" +
-                       "SAN DNS:`t $($certObject.DnsNameList)`r`n" +
-                       "`r`n" + # empty line 
-                       "Not Before:`t $($certObject.NotBefore)`r`n" +
-                       "Not After:`t $($certObject.NotAfter)`r`n" +
-                       "`r`n" + # empty line 
-                       "Thumbprint:`t $($certObject.Thumbprint)`r`n" +
-                       "Key Usage:`t $($certObject.EnhancedKeyUsageList)`r`n" +
-                       "Serial Number:`t $($certObject.SerialNumber)`r`n" +
-                       "Trusted Issuer:`t $($certObject.SendAsTrustedIssuer)`r`n" +
-                       "Archived:`t $($certObject.Archived)`r`n" +
-                       $extensions +
-                       "`r`n" + # empty line 
-                       "Friendly Name:`t $($certObject.FriendlyName)`r`n" +
-                       "Has Private Key:`t $($certObject.HasPrivateKey)`r`n" +
-                       $publicKey +
-                       "SHA Version:`t $($certObject.SignatureAlgorithm.FriendlyName) `r`n" +
-                       "Version:`t`t $($certObject.Version)`r`n" +
-                       "`r`n" + # empty line 
-                       "Raw Data:`t $($certObject.RawData)`r`n"
-        return $certDetails
-    }
-    throw "Failed to retrieve certificate for $uri"
-}
-
-# Validates the response data from a request.Attempts to extract an SSL certificate from the response.
-function ValidateRequestData($response) {
-    # If the CheckBox4 UI element is checked, attempt to extract an SSL certificate from the response.
-    if ($CheckBox4.IsChecked) {
-        # Extract the SSL certificate from the response using the ConvertFrom-SslCertificate cmdlet.
-        $cert = $response | Out-String | ConvertFrom-SslCertificate
-        
-        # Return true if a certificate was successfully extracted, or false otherwise.
-        return $null -ne $cert
-    }
-    
-    # If the CheckBox4 UI element is not checked, assume that the response is valid and return true.
-    return $true
-}
-
-
-
-# Throws an error indicating that the response data is invalid.
-function ThrowInvalidResponseDataError {
-    # Call the DisplayErrorMessage function to display an error message.
-    DisplayErrorMessage "Invalid response data"
-}
-# Throws an error indicating that an error occurred while making a request to the server.
-function ThrowRequestError ($response) {
-    # Extract the response code and status description from the $response object.
-    $responseCode = $response.StatusCode
-    $statusDescription = $response.StatusDescription
-    
-    # Construct an error message using the response code and status description.
-    $errorMessage = "Error occurred while requesting data. Response code: $responseCode. Status description: $statusDescription"
-    
-    # Call the DisplayErrorMessage function to display the error message.
-    DisplayErrorMessage $errorMessage
-}
-# Throws an error with a custom error message.
-function ThrowError ($message) {
-    # Call the DisplayErrorMessage function with the provided $message string to display the error message.
-    DisplayErrorMessage $message
-}
-# Throws an error indicating that a timeout occurred while connecting to a WebSocket server.
-function ThrowTimeoutError {
-    # Call the DisplayErrorMessage function with a message indicating that a timeout occurred.
-    DisplayErrorMessage "Timeout occurred while connecting to WebSocket server"
-}
-# Throws an error indicating that an error occurred while connecting to the server.
-function ThrowNetworkConnectionError ($message) {
-    # Construct an error message using the provided $message string.
-    $errorMessage = "Error occurred while connecting to server: " + $message
-    
-    # Call the DisplayErrorMessage function with the constructed error message to display the error message.
-    DisplayErrorMessage $errorMessage
-}
-# Throws an error indicating that an error occurred while making a request to the server.
-function ThrowServerRequestError ($response) {
-    # Extract the response code from the $response object.
-    $responseCode = $response.StatusCode
-    
-    # Construct an error message based on the response code.
-    if ($responseCode -eq 500) {
-        # If the response code is 500, indicate that an internal server error occurred.
-        $errorMessage = "Internal Server Error"
-    } elseif ($responseCode -ge 400 -and $responseCode -lt 600) {
-        # If the response code is between 400 and 599 (inclusive), indicate that the server returned an error.
-        $errorMessage = "Server returned an error. Response code: $responseCode. Status description: $($response.StatusDescription)"
-    } else {
-        # Otherwise, indicate that an error occurred while requesting data and include the status description from the $response object.
-        $errorMessage = "Error occurred while requesting data: " + $response.StatusDescription
-    }
-    
-    # Call the DisplayErrorMessage function with the constructed error message to display the error message.
-    DisplayErrorMessage $errorMessage
-}
-# Throws an error indicating that an error occurred while connecting to a WebSocket server.
-function ThrowWebSocketConnectionError ($message) {
-    # Construct an error message using the provided $message string.
-    $errorMessage = "Error occurred while connecting to WebSocket server: " + $message
-    
-    # Call the DisplayErrorMessage function with the constructed error message to display the error message.
-    DisplayErrorMessage $errorMessage
-}
-# Throws an error indicating that an invalid WebSocket message was received.
-function ThrowInvalidWebSocketMessageError {
-    # Construct an error message indicating that an invalid WebSocket message was received.
-    $errorMessage = "Invalid WebSocket message received"
-    
-    # Call the DisplayErrorMessage function with the constructed error message to display the error message.
-    DisplayErrorMessage $errorMessage
-}
-# Throws an error indicating that an error occurred while processing a WebSocket message.
-function ThrowWebSocketProcessingError ($errorMessage) {
-    # Construct an error message using the provided $errorMessage string.
-    $errorMessage = "Error occurred while processing WebSocket message: " + $errorMessage
-    
-    # Call the DisplayErrorMessage function with the constructed error message to display the error message.
-    DisplayErrorMessage $errorMessage
-}
+# XAML and Assebly for the GUI
+Add-Type -AssemblyName PresentationFramework
+Add-Type -AssemblyName System.Windows.Forms
+[xml]$XAML = @"
+<Window xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="Awitac Axess Discovery Viewer" Height="625" Width="1000">
+    <DockPanel>
+        <Menu DockPanel.Dock="Top">
+            <MenuItem Header="_File">
+                <MenuItem Name="OpenMenuItem" Header="_Open" />
+                <MenuItem Name="SaveMenuItem" Header="_Save" />
+                <MenuItem Name="SaveAsMenuItem" Header="_Save As..." />
+                <Separator />
+                <MenuItem Name="ExitMenuItem" Header="_Exit" />
+            </MenuItem>
+            <MenuItem Header="FCM">
+                <MenuItem Name="SendTestToFCM" Header="_Send Test Notification"/>
+            </MenuItem>
+            <MenuItem Header="Tools">
+                <MenuItem Header="_Test TCP Port" Name="PortTestingMenuItem"/>
+            </MenuItem>
+        </Menu>
+        <Grid>
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition/>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="Auto"/>
+            </Grid.RowDefinitions>
+            <Grid Grid.Row="0" Margin="5">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="Auto"/>
+                    <ColumnDefinition Width="Auto"/>
+                    <ColumnDefinition Width="*"/>
+                </Grid.ColumnDefinitions>
+            </Grid>
+               <Grid Grid.Row="1" Margin="5">
+                <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="Auto"/>
+                <ColumnDefinition Width="Auto"/>
+                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="Auto"/>
+                <ColumnDefinition Width="Auto"/>
+                <ColumnDefinition Width="Auto"/>
+                <ColumnDefinition Width="Auto"/>
+                <ColumnDefinition Width="Auto"/>
+               </Grid.ColumnDefinitions>
+                <ComboBox Grid.Column="0" Name="MethodComboBox"  Margin="5" Width="100"            HorizontalAlignment="Left" VerticalAlignment="Center">
+                    <ComboBoxItem Content="POST"/>
+                    <ComboBoxItem Content="GET"/>
+                    <ComboBoxItem Content="PUT"/>
+                    <ComboBoxItem Content="DELETE"/>
+                </ComboBox>
+                <TextBlock Grid.Column="1" Text="https://"       Margin="5" FontWeight="Bold"      HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                <TextBox   Grid.Column="2" Name="UrlTextBox" Margin="5"                        HorizontalAlignment="Stretch"/>
+                <CheckBox  Grid.Column="3" Name="CheckBox1"  Margin="5" Content="Discovery"    HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                <CheckBox  Grid.Column="4" Name="CheckBox2"  Margin="5" Content="VerifySite"   HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                <CheckBox  Grid.Column="5" Name="CheckBox3"  Margin="5" Content="WebSocket"    HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                <CheckBox  Grid.Column="6" Name="CheckBox4"  Margin="5" Content="Certificate"  HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                <Button    Grid.Column="7" Name="RunButton"  Margin="5,0,0,0" Content="Run"    HorizontalAlignment="Right"  VerticalAlignment="Center" Width="{Binding ActualWidth, ElementName=ClearButton}"/>
+            </Grid>
+                <Grid Grid.Row="2" Margin="5">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="Auto"/>
+                        <ColumnDefinition Width="60"/>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="Auto"/>
+                    </Grid.ColumnDefinitions>
+                <TextBlock Grid.Column="0" Text="Response Code:" FontWeight="Bold" Margin="5,0,5,0" HorizontalAlignment="Left"/>
+                <TextBlock Grid.Column="1" Name="ResponseCodeTextBlock" Margin="5,0,0,0" Width="45"/>
+                <Button    Grid.Column="2" Name="ClearButton" Content="Clear" Width="100" Margin="5,0,0,0"  HorizontalAlignment="Right"/>
+                <Button    Grid.Column="3" Name="CopyButton" Content="Copy" Width="100" Margin="5,0,0,0"  HorizontalAlignment="Right"/>
+              </Grid>
+            <TextBox Grid.Row="3" Name="ResponseTextBox" IsReadOnly="True" TextWrapping="Wrap" AcceptsReturn="True" ScrollViewer.VerticalScrollBarVisibility="Auto" Margin="5" Padding="5"/>
+            <StatusBar Grid.Row="5" Name="StatusBar" Height="35">
+                <StatusBarItem VerticalAlignment="Center">
+                    <Label Content="Status:"/>
+                </StatusBarItem>
+                <StatusBarItem>
+                    <TextBlock Name="StatusBarTextBlock" HorizontalAlignment="Left" Text=""/>
+                </StatusBarItem>
+            </StatusBar>
+        </Grid>
+    </DockPanel>
+</Window>
+"@
+$reader = (New-Object System.Xml.XmlNodeReader $XAML); $Window = [Windows.Markup.XamlReader]::Load($reader) # UI Initialization
 
 
 # Event Handlers
@@ -711,99 +272,14 @@ $OnMethodComboBoxSelectionChanged = {
     Write-Host "Selected method: $($selectedItem.Content)"
 }
 
-# XAML and Assebly for the GUI
-Add-Type -AssemblyName PresentationFramework
-Add-Type -AssemblyName System.Windows.Forms
-[xml]$XAML = @"
-<Window xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
-        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-        Title="Awitac Axess Discovery Viewer" Height="625" Width="1000">
-    <DockPanel>
-        <Menu DockPanel.Dock="Top">
-            <MenuItem Header="_File">
-                <MenuItem Name="OpenMenuItem" Header="_Open" />
-                <MenuItem Name="SaveMenuItem" Header="_Save" />
-                <MenuItem Name="SaveAsMenuItem" Header="_Save As..." />
-                <MenuItem Name="ExitMenuItem" Header="_Exit" />
-            </MenuItem>
-        </Menu>
-        <Grid>
-            <Grid.RowDefinitions>
-                <RowDefinition Height="Auto"/>
-                <RowDefinition Height="Auto"/>
-                <RowDefinition Height="Auto"/>
-                <RowDefinition/>
-                <RowDefinition Height="Auto"/>
-                <RowDefinition Height="Auto"/>
-            </Grid.RowDefinitions>
-            <Grid Grid.Row="0" Margin="5">
-                <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="Auto"/>
-                    <ColumnDefinition Width="Auto"/>
-                    <ColumnDefinition Width="*"/>
-                </Grid.ColumnDefinitions>
-            </Grid>
-               <Grid Grid.Row="1" Margin="5">
-                <Grid.ColumnDefinitions>
-                <ColumnDefinition Width="Auto"/>
-                <ColumnDefinition Width="Auto"/>
-                <ColumnDefinition Width="*"/>
-                <ColumnDefinition Width="Auto"/>
-                <ColumnDefinition Width="Auto"/>
-                <ColumnDefinition Width="Auto"/>
-                <ColumnDefinition Width="Auto"/>
-                <ColumnDefinition Width="Auto"/>
-               </Grid.ColumnDefinitions>
-                <ComboBox Grid.Column="0" Name="MethodComboBox"  Margin="5" Width="100"            HorizontalAlignment="Left" VerticalAlignment="Center">
-                    <ComboBoxItem Content="POST"/>
-                    <ComboBoxItem Content="GET"/>
-                    <ComboBoxItem Content="PUT"/>
-                    <ComboBoxItem Content="DELETE"/>
-                </ComboBox>
-                <TextBlock Grid.Column="1" Text="https://"       Margin="5" FontWeight="Bold"      HorizontalAlignment="Center" VerticalAlignment="Center"/>
-                <TextBox   Grid.Column="2" Name="UrlTextBox" Margin="5"                        HorizontalAlignment="Stretch"/>
-                <CheckBox  Grid.Column="3" Name="CheckBox1"  Margin="5" Content="Discovery"    HorizontalAlignment="Center" VerticalAlignment="Center"/>
-                <CheckBox  Grid.Column="4" Name="CheckBox2"  Margin="5" Content="VerifySite"   HorizontalAlignment="Center" VerticalAlignment="Center"/>
-                <CheckBox  Grid.Column="5" Name="CheckBox3"  Margin="5" Content="WebSocket"    HorizontalAlignment="Center" VerticalAlignment="Center"/>
-                <CheckBox  Grid.Column="6" Name="CheckBox4"  Margin="5" Content="Certificate"  HorizontalAlignment="Center" VerticalAlignment="Center"/>
-                <Button    Grid.Column="7" Name="RunButton"  Margin="5,0,0,0" Content="Run"    HorizontalAlignment="Right"  VerticalAlignment="Center" Width="{Binding ActualWidth, ElementName=ClearButton}"/>
-            </Grid>
-                <Grid Grid.Row="2" Margin="5">
-                    <Grid.ColumnDefinitions>
-                        <ColumnDefinition Width="Auto"/>
-                        <ColumnDefinition Width="60"/>
-                        <ColumnDefinition Width="*"/>
-                        <ColumnDefinition Width="Auto"/>
-                    </Grid.ColumnDefinitions>
-                <TextBlock Grid.Column="0" Text="Response Code:" FontWeight="Bold" Margin="5,0,5,0" HorizontalAlignment="Left"/>
-                <TextBlock Grid.Column="1" Name="ResponseCodeTextBlock" Margin="5,0,0,0" Width="45"/>
-                <Button    Grid.Column="2" Name="ClearButton" Content="Clear" Width="100" Margin="5,0,0,0"  HorizontalAlignment="Right"/>
-                <Button    Grid.Column="3" Name="CopyButton" Content="Copy" Width="100" Margin="5,0,0,0"  HorizontalAlignment="Right"/>
-              </Grid>
-            <TextBox Grid.Row="3" Name="ResponseTextBox" IsReadOnly="True" TextWrapping="Wrap" AcceptsReturn="True" ScrollViewer.VerticalScrollBarVisibility="Auto" Margin="5" Padding="5"/>
-            <StatusBar Grid.Row="5" Name="StatusBar" Height="35">
-                <StatusBarItem VerticalAlignment="Center">
-                    <Label Content="Status:"/>
-                </StatusBarItem>
-                <StatusBarItem>
-                    <TextBlock Name="StatusBarTextBlock" HorizontalAlignment="Left" Text=""/>
-                </StatusBarItem>
-            </StatusBar>
-        </Grid>
-    </DockPanel>
-</Window>
-"@
-
-# UI Initialization
-$reader = (New-Object System.Xml.XmlNodeReader $XAML)
-$Window = [Windows.Markup.XamlReader]::Load($reader)
-$ResponseTextBox = $Window.FindName("ResponseTextBox")
+# Event Listener Registration
 $ResponseCodeTextBlock = $Window.FindName("ResponseCodeTextBlock")
+$ResponseTextBox = $Window.FindName("ResponseTextBox")
+$StatusBarTextBlock = $Window.FindName("StatusBarTextBlock")
 $UrlTextBox = $Window.FindName("UrlTextBox")
 $ClearButton = $Window.FindName("ClearButton")
 $CopyButton = $Window.FindName("CopyButton")
 $RunButton = $Window.FindName("RunButton")
-$StatusBarTextBlock = $Window.FindName("StatusBarTextBlock")
 $global:OpenedFilename = $null
 $CheckBox1 = $Window.FindName("CheckBox1")
 $CheckBox2 = $Window.FindName("CheckBox2")
@@ -811,8 +287,6 @@ $CheckBox3 = $Window.FindName("CheckBox3")
 $CheckBox4 = $Window.FindName("CheckBox4")
 $MethodComboBox = $Window.FindName("MethodComboBox")
 $MethodComboBox.SelectedItem = $MethodComboBox.Items[0]
-
-# Event Listener Registration
 $UrlTextBox.Add_KeyDown($OnUrlTextBoxKeyDown)
 $ClearButton.Add_Click($OnClearButtonClick)
 $CopyButton.Add_Click($OnCopyButtonClick)
@@ -828,6 +302,735 @@ $Window.Add_Closing($OnWindowClosing)
 $ExitMenuItem.Add_Click($OnExitMenuItemClick)
 $MethodComboBox.Add_SelectionChanged($OnMethodComboBoxSelectionChanged)
 $global:FileContent = ""
+
+$SendTestToFCM = $Window.FindName("SendTestToFCM")
+$SendTestToFCM.add_Click({
+    ShowFCMTestDialog
+})
+
+$PortTestingMenuItem = $Window.FindName("PortTestingMenuItem")
+$PortTestingMenuItem.Add_Click({OnPortTestingMenuItemClick})
+
+# Section 1
+# UpdateResponse: Updates the response text box with the results of a request | Linked to the "Send" button on the UI. 
+function UpdateResponse {
+    $userUrl = $UrlTextBox.Text.Trim(); $endpoint = ""; $baseUrl = GetBaseUrl $userUrl $endpoint
+    if ($null -eq $baseUrl) { return }
+    $ResponseCodeTextBlock.Text = ""; $request = GetRequestData
+    if ($CheckBox4.IsChecked) { GetCertificate; return }
+    try {
+        $response = Invoke-WebRequest @request -TimeoutSec 2
+        $timestamp = Get-Date -Format "yyyy-MM-dd HH:mm:ss"; $responseCode = $response.StatusCode
+        $jsonResponse = $response.Content | ConvertFrom-Json | ConvertTo-Json -Depth 10
+        $currentResponse = "Timestamp: $timestamp`r`nResponse code: $responseCode`r`n`r`nResponse body:`r`n$jsonResponse"
+        if (ValidateRequestData $response) { $ResponseTextBox.Dispatcher.Invoke([action]{ $ResponseTextBox.Text = $currentResponse }, "Normal"); $ResponseCodeTextBlock.Dispatcher.Invoke([action]{ $ResponseCodeTextBlock.Text = $responseCode.ToString() }, "Normal"); $StatusBarTextBlock.Dispatcher.Invoke([action]{ $StatusBarTextBlock.Text = "Data received successfully" }, "Normal") } 
+        elseif ($responseCode -ge 500) { ThrowServerRequestError $response } 
+        else { ThrowInvalidResponseDataError }} 
+    catch [System.Net.WebException] { ThrowNetworkConnectionError $_.Exception.Message } 
+    catch [System.TimeoutException] { ThrowTimeoutError } 
+    catch { ThrowError $_.Exception.Message }}
+
+# GetBaseUrl: Constructs the base URL for a request | Called by UpdateResponse.
+function GetBaseUrl {
+    param(
+        [string]$userUrl,
+        [string]$endpoint
+    )
+    # If $userUrl is empty, return null.
+    if ($userUrl -eq "") {
+        return $null
+    }
+    
+    # Check if any of the checkboxes are checked and call the appropriate function.
+    if ($CheckBox1.IsChecked) {
+        return GetDiscoveryUrl($userUrl)
+    } elseif ($CheckBox2.IsChecked) {
+        return GetVerifySiteUrl($userUrl)
+    } elseif ($CheckBox3.IsChecked) {
+        SendAndReceiveWebSocket
+        return $null
+    } elseif ($CheckBox4.IsChecked) {
+        GetCertificate
+        return $null
+    }
+    
+    # If the endpoint is not "WebSocket" and the URL does not start with "https://", add "https://" to the beginning of the URL.
+    if ($endpoint -ne "WebSocket" -and -not $userUrl.StartsWith("https://")) {
+        if ($userUrl.StartsWith("http://")) {
+            $userUrl = "https://" + $userUrl.Substring(7)
+        } else {
+            $userUrl = "https://" + $userUrl
+        }
+    }
+    
+    # Construct the full URL with the endpoint if it is not null or empty, or return the userUrl if it is.
+    if (-not [string]::IsNullOrWhiteSpace($endpoint)) {
+        return $userUrl.TrimEnd('/') + "/axess/SystemManagerService.svc/$endpoint"
+    } else {
+        return $userUrl.TrimEnd('/')
+    }
+}
+
+# GetRequestData: Constructs the request data for a request | Called by UpdateResponse. 
+function GetRequestData() {
+    # Set the method based on the selected value in the MethodComboBox.
+    $method = $MethodComboBox.SelectedItem.Content
+    
+    # Set the URL to the base URL.
+    $url = $baseUrl
+    
+    # Set the request body to an empty JSON object.
+    $body = "{}"
+    
+    # Set the request headers to include the Content-Type header with a value of "application/json".
+    $headers = @{
+        "Content-Type" = "application/json"
+    }
+    
+    # Construct a hashtable containing the request method, URL, headers, and body.
+    $request = @{
+        Method = $method
+        Uri = $url
+        Headers = $headers
+        Body = $body
+    }
+    
+    # If the CheckBox4 UI element is checked, set the request method to "POST".
+    if ($CheckBox4.IsChecked) {
+        $request.Method = "POST"
+    }
+    
+    # Return the request hashtable.
+    return $request
+}
+
+# DisplayErrorMessage: Displays an error message in the user interface | Called by UpdateResponse if an error occurs. 
+function DisplayErrorMessage($errorMessage) {
+    # Construct a string that includes "Error: " and the provided $errorMessage string.
+    $currentResponse = "Error: $errorMessage"
+    
+    # Use the Dispatcher.Invoke method to update the ResponseTextBox UI element with the constructed error message.
+    $ResponseTextBox.Dispatcher.Invoke([action]{
+        $ResponseTextBox.Text = ""
+        $ResponseTextBox.Text = $currentResponse
+    }, "Normal")
+    
+    # Use the Dispatcher.Invoke method to clear the ResponseCodeTextBlock UI element.
+    $ResponseCodeTextBlock.Dispatcher.Invoke([action]{
+        $ResponseCodeTextBlock.Text = ""
+    }, "Normal")
+    
+    # Use the Dispatcher.Invoke method to update the StatusBarTextBlock UI element with an error message.
+    $StatusBarTextBlock.Dispatcher.Invoke([action]{
+        $StatusBarTextBlock.Text = ""
+        $StatusBarTextBlock.Text = "Error occurred while requesting data"
+    }, "Normal")
+}
+
+
+# Section 2
+# ClearDisplay: Clears the text in three UI elements: ResponseTextBox, ResponseCodeTextBlock, and StatusBarTextBlock | Linked to the "Clear" button on the UI. 
+function ClearDisplay() {
+    # Use the Dispatcher.Invoke method to set the Text property of each UI element to an empty string.
+    $ResponseTextBox.Dispatcher.Invoke([action]{
+        $ResponseTextBox.Text = ""
+    }, "Normal")
+    $ResponseCodeTextBlock.Dispatcher.Invoke([action]{
+        $ResponseCodeTextBlock.Text = ""
+    }, "Normal")
+    $StatusBarTextBlock.Dispatcher.Invoke([action]{
+        $StatusBarTextBlock.Text = ""
+    }, "Normal")
+}
+
+
+# Section 3
+# GetDiscoveryUrl: Constructs the discovery URL for the specified URL | Called by GetBaseUrl if CheckBox1 is checked. 
+function GetDiscoveryUrl {
+    param(
+        [string]$userUrl
+    )
+    
+    # Set the endpoint to "Discovery".
+    $endpoint = "Discovery"
+    
+    # Add "https://" to the URL if it's missing.
+    if (-not $userUrl.StartsWith("https://")) {
+        if ($userUrl.StartsWith("http://")) {
+            $userUrl = "https://" + $userUrl.Substring(7)
+        } else {
+            $userUrl = "https://" + $userUrl
+        }
+    }
+    
+    # Construct the full URL with the "Discovery" endpoint.
+    $finalUrl = $userUrl.TrimEnd('/') + "/axess/SystemManagerService.svc/$endpoint"
+    
+    # Write the final URL to the console for debugging purposes.
+    Write-Host "Final URL: $finalUrl"
+    
+    # Return the discovery URL.
+    return $finalUrl
+}
+
+# GetVerifySiteUrl: Constructs the VerifySiteUrl for the specified URL | Called by GetBaseUrl if CheckBox2 is checked. 
+function GetVerifySiteUrl {
+    param(
+        [string]$userUrl
+    )
+    
+    # Set the endpoint to "VerifySiteUrl".
+    $endpoint = "VerifySiteUrl"
+    
+    # Add "https://" to the URL if it's missing.
+    if (-not $userUrl.StartsWith("https://")) {
+        if ($userUrl.StartsWith("http://")) {
+            $userUrl = "https://" + $userUrl.Substring(7)
+        } else {
+            $userUrl = "https://" + $userUrl
+        }
+    }
+    
+    # Construct the full URL with the "VerifySiteUrl" endpoint.
+    $finalUrl = $userUrl.TrimEnd('/') + "/axess/SystemManagerService.svc/$endpoint"
+    
+    # Write the final URL to the console for debugging purposes.
+    Write-Host "Final URL: $finalUrl"
+    
+    # Return the VerifySiteUrl.
+    return $finalUrl
+}
+
+# SendAndReceiveWebSocket: Sends and receives messages over a WebSocket connection | Linked to CheckBox3 on the UI. 
+function SendAndReceiveWebSocket {
+    # Get the WebSocket URL from the input text box
+    $url = $UrlTextBox.Text.Trim()
+    
+    # Modify the URL to the WebSocket endpoint format
+    if ($url.StartsWith("http://")) { $url = "ws://" + $url.Substring(7) }
+    elseif ($url.StartsWith("https://")) { $url = "wss://" + $url.Substring(8) }
+    if ($url.EndsWith("/websocket")) { $url = $url.Substring(0, $url.Length - 9) }
+    $url += "/websocket"
+    if ($url.StartsWith("ws://")) { $url = $url.Replace("ws://", "wss://") }
+    elseif (!$url.StartsWith("wss://") -and !$url.StartsWith("ws://")) { $url = "wss://" + $url }
+    
+    # Create a new WebSocket client
+    $websocket = New-Object System.Net.WebSockets.ClientWebSocket
+    
+    # Set up a cancellation token for the connection timeout
+    $ct = [System.Threading.CancellationToken]::None
+    
+    # Clear the UI display
+    ClearDisplay
+    
+    # Connect to the WebSocket server
+    Write-Host "Final URL: $url"
+    try {
+        $uri = New-Object System.Uri($url)
+        $timeout = New-Object System.Threading.CancellationTokenSource(1500) # 1.5 second timeout
+        $websocket.ConnectAsync($uri, $timeout.Token).Wait()
+        
+        # Receive the WebSocket message and validate the response data
+        $buffer = New-Object System.Byte[] 1024
+        $segment = New-Object System.ArraySegment[Byte] -ArgumentList @(,$buffer)
+        $result = $websocket.ReceiveAsync($segment, $ct).Result
+        $receivedData = [System.Text.Encoding]::UTF8.GetString($buffer, 0, $result.Count)
+        if (ValidateRequestData $receivedData) {
+            # Update the UI with the received message
+            ClearDisplay
+            $ResponseTextBox.Dispatcher.Invoke([action]{
+                $ResponseTextBox.AppendText($receivedData)
+            }, "Normal")
+            $ResponseCodeTextBlock.Dispatcher.Invoke([action]{
+                $ResponseCodeTextBlock.Text = "200"
+            }, "Normal")
+            $StatusBarTextBlock.Dispatcher.Invoke([action]{
+                $StatusBarTextBlock.Text = "Channel Open"
+            }, "Normal")
+        } else {
+            ThrowInvalidWebSocketMessageError
+        }
+    } 
+    catch [System.TimeoutException] {
+        ThrowTimeoutError
+    } 
+    catch [System.Net.WebSockets.WebSocketException] {
+        # Handle different types of WebSocket exceptions
+        if ($_.Message -eq "The remote party closed the WebSocket connection without completing the close handshake.") {
+            ThrowWebSocketConnectionError "Remote party closed the WebSocket connection"
+        } elseif ($_.Message -match "HTTP/1.1 ([4-5]\d{2})") {
+            $errorCode = $Matches[1]
+            $errorMessage = "WebSocket Error: Server returned a $errorCode error"
+            [System.Windows.MessageBox]::Show($errorMessage, "Error", [System.Windows.MessageBoxButton]::OK, [System.Windows.MessageBoxImage]::Error)
+            ThrowWebSocketProcessingError $errorMessage
+        } else {
+            ThrowWebSocketProcessingError $_.Exception.Message
+        }
+    } 
+    catch [System.Exception] {
+        Write-Host "Error: $_"
+        ThrowWebSocketProcessingError $_.Exception.Message
+    } 
+    finally {
+        # Close and dispose of the WebSocket client
+        if ($websocket.State -eq 'Open') {
+            $websocket.CloseAsync('NormalClosure', [System.Net.WebSockets.WebSocketCloseStatus]::NormalClosure, $ct).Wait()
+        }
+        $websocket.Dispose()
+    }
+}
+
+
+# Section 4
+# GetCertificate: Retrieves the SSL certificate for a given URL and displays its details in the UI | Linked to the "Get Certificate" button on the UI. 
+function GetCertificate() {
+    # Get the URL from the UrlTextBox and remove any whitespace.
+    $userUrl = $UrlTextBox.Text.Trim()
+    
+    # If the URL starts with "http://", replace it with "https://".
+    if ($userUrl.StartsWith("http://")) {
+        $userUrl = $userUrl.Replace("http://", "https://")
+    }
+    
+    # If the URL starts with "https://", create a new Uri object with the URL.
+    # Otherwise, add "https://" to the beginning of the URL and create a new Uri object with the updated URL.
+    if ($userUrl.StartsWith("https://")) {
+        $uri = New-Object System.Uri($userUrl)
+    } else {
+        $uri = New-Object System.Uri("https://$userUrl")
+    }
+    
+    # Write the final URL to the console.
+    Write-Host "Final URL: $($uri.AbsoluteUri)"
+    
+    try {
+        # Call the GetCertificateDetails function to retrieve the SSL certificate details for the URL.
+        $certDetails = GetCertificateDetails $uri
+        
+        # Display the certificate details in the UI.
+        $ResponseTextBox.Dispatcher.Invoke([action]{
+            $ResponseTextBox.Text = $certDetails
+        }, "Normal")
+        $ResponseCodeTextBlock.Dispatcher.Invoke([action]{
+            $ResponseCodeTextBlock.Text = "200"
+        }, "Normal")
+        $StatusBarTextBlock.Dispatcher.Invoke([action]{
+            $StatusBarTextBlock.Text = "Certificate received successfully"
+        }, "Normal")
+    }
+    catch {
+        # Handle any errors that occur during the SSL connection or certificate retrieval.
+        $ResponseTextBox.Dispatcher.Invoke([action]{
+            $ResponseTextBox.Text = $_.Exception.Message
+        }, "Normal")
+        $ResponseCodeTextBlock.Dispatcher.Invoke([action]{
+            $ResponseCodeTextBlock.Text = $_.Exception.HResult
+        }, "Normal")
+        $StatusBarTextBlock.Dispatcher.Invoke([action]{
+            $StatusBarTextBlock.Text = "Error retrieving certificate"
+        }, "Normal")
+    }
+}
+
+# GetCertificateDetails: Retrieves the SSL certificate for a given URL and returns a string containing its details | Called by the GetCertificate function. 
+function GetCertificateDetails($uri) {
+    # Get the hostname and port number from the URI.
+    $hostname = $uri.Host
+    $port = $uri.Port
+    $certObject = $null
+    try {
+        # Create a new TcpClient and connect to the specified hostname and port.
+        $tcpClient = New-Object System.Net.Sockets.TcpClient
+        $cancellationTokenSource = New-Object System.Threading.CancellationTokenSource
+        $cancellationTokenSource.CancelAfter(2000) # Set a 2-second timeout
+        $tcpClient.ConnectAsync($hostname, $port).Wait($cancellationTokenSource.Token)
+        
+        # If the connection is not successful, throw an error.
+        if (!$tcpClient.Connected) {
+            throw "Connection timed out"
+        }
+
+        # Create a new SslStream and authenticate it as a client with the specified hostname.
+        $sslStream = New-Object System.Net.Security.SslStream($tcpClient.GetStream())
+        $sslStream.AuthenticateAsClient($hostname)
+        
+        # Get the remote SSL certificate and create a new X509Certificate2 object from it.
+        $cert = $sslStream.RemoteCertificate
+        $certObject = New-Object System.Security.Cryptography.X509Certificates.X509Certificate2($cert)
+    }
+    finally {
+        # Dispose of the TcpClient and SslStream objects.
+        if ($sslStream) { $sslStream.Dispose() }
+        if ($tcpClient) { $tcpClient.Dispose() }
+    }
+    
+    if ($certObject) {
+        # Get the extensions and public key information from the certificate.
+        $extensions = "Extensions:`t $($certObject.Extensions.Oid.FriendlyName -join ', ')" + "`r`n"
+        $publicKeyTypeName = $certObject.PublicKey.Key.GetType().Name
+        $publicKey = "Public Key Type:`t $publicKeyTypeName`r`n"
+
+        switch ($publicKeyTypeName) {
+            # If the public key is RSA, add the RSA public key to the string.
+            "RSA" {
+                $publicKey += "Public Key:`t `t $($certObject.PublicKey.GetRSAPublicKey().ToXmlString($true))`r`n"
+            }
+            # If the public key is ECDsa, add the ECDsa public key and signature algorithm to the string.
+            "ECDsa" {
+                $publicKey += "Public Key:`t `t $($certObject.PublicKey.GetECDsaPublicKey().ToXmlString($true))`r`n"
+                $publicKey += "SHA Version:`t $($certObject.SignatureAlgorithm.FriendlyName)`r`n"
+            }
+        }
+        # Construct a string that contains all of the certificate's properties.
+        $certDetails = "URL:`t`t $uri`r`n" +
+                       "`r`n" + # empty line 
+                       "Subject:`t`t $($certObject.Subject)`r`n" +
+                       "Issuer:`t`t $($certObject.Issuer)`r`n" +
+                       "SAN DNS:`t $($certObject.DnsNameList)`r`n" +
+                       "`r`n" + # empty line 
+                       "Not Before:`t $($certObject.NotBefore)`r`n" +
+                       "Not After:`t $($certObject.NotAfter)`r`n" +
+                       "`r`n" + # empty line 
+                       "Thumbprint:`t $($certObject.Thumbprint)`r`n" +
+                       "Key Usage:`t $($certObject.EnhancedKeyUsageList)`r`n" +
+                       "Serial Number:`t $($certObject.SerialNumber)`r`n" +
+                       "Trusted Issuer:`t $($certObject.SendAsTrustedIssuer)`r`n" +
+                       "Archived:`t $($certObject.Archived)`r`n" +
+                       $extensions +
+                       "`r`n" + # empty line 
+                       "Friendly Name:`t $($certObject.FriendlyName)`r`n" +
+                       "Has Private Key:`t $($certObject.HasPrivateKey)`r`n" +
+                       $publicKey +
+                       "SHA Version:`t $($certObject.SignatureAlgorithm.FriendlyName) `r`n" +
+                       "Version:`t`t $($certObject.Version)`r`n" +
+                       "`r`n" + # empty line 
+                       "Raw Data:`t $($certObject.RawData)`r`n"
+        return $certDetails
+    }
+    throw "Failed to retrieve certificate for $uri"
+}
+
+# ValidateRequestData: Attempts to extract an SSL certificate from the response | Called by the UpdateResponse function
+function ValidateRequestData($response) {
+    # If the CheckBox4 UI element is checked, attempt to extract an SSL certificate from the response.
+    if ($CheckBox4.IsChecked) {
+        # Extract the SSL certificate from the response using the ConvertFrom-SslCertificate cmdlet.
+        $cert = $response | Out-String | ConvertFrom-SslCertificate
+        
+        # Return true if a certificate was successfully extracted, or false otherwise.
+        return $null -ne $cert
+    }
+    
+    # If the CheckBox4 UI element is not checked, assume that the response is valid and return true.
+    return $true
+}
+
+
+# Section 5
+# ShowFCMTestDialog: Displays a dialog box for the user to enter FCM credentials and a device token | Calls the SendTestNotification function when the user clicks the "Send
+function ShowFCMTestDialog {
+    $dialog = New-Object System.Windows.Window
+    $dialog.Title = "FCM Credentials"
+    $dialog.Width = 600
+    $dialog.Height = 300
+    $dialog.WindowStartupLocation = "CenterScreen"
+
+    $stackPanel = New-Object System.Windows.Controls.StackPanel
+
+    $serverKeyLabel = New-Object System.Windows.Controls.Label
+    $serverKeyLabel.Margin = "10 0"
+    $serverKeyLabel.Content = "FCM Server Key:"
+    $serverKeyTextBox = New-Object System.Windows.Controls.TextBox
+    $serverKeyTextBox.Margin = "10 0"
+    $stackPanel.Children.Add($serverKeyLabel)
+    $stackPanel.Children.Add($serverKeyTextBox)
+
+    $userIDLabel = New-Object System.Windows.Controls.Label
+    $userIDLabel.Margin = "10 0"
+    $userIDLabel.Content = "Project ID:"
+    $userIDTextBox = New-Object System.Windows.Controls.TextBox
+    $userIDTextBox.Margin = "10 0"
+    $stackPanel.Children.Add($userIDLabel)
+    $stackPanel.Children.Add($userIDTextBox)
+
+    $deviceTokenLabel = New-Object System.Windows.Controls.Label
+    $deviceTokenLabel.Margin = "10 0"
+    $deviceTokenLabel.Content = "Device Token:"
+    $deviceTokenTextBox = New-Object System.Windows.Controls.TextBox
+    $deviceTokenTextBox.Margin = "10 0"
+    $stackPanel.Children.Add($deviceTokenLabel)
+    $stackPanel.Children.Add($deviceTokenTextBox)
+
+    $button = New-Object System.Windows.Controls.Button
+    $button.Content = "Send Test Notification"
+    $button.Margin = "5"
+    $button.Width = "150"
+    $button.Add_Click({
+        try {
+            # Call a function to send the test notification using the information provided by the user
+            SendTestNotification $serverKeyTextBox.Text $userIDTextBox.Text $deviceTokenTextBox.Text
+        } catch {
+            # Handle any exceptions that occur during the call to SendTestNotification
+            $timestamp = Get-Date -Format "yyyy-MM-dd HH:mm:ss"
+            $errorMessage = "Error sending FCM request: $($_.Exception.Message)"
+
+            $currentResponse = "Timestamp: $timestamp`r`nError: $errorMessage"
+            UpdateResponseTextBox $currentResponse 0 $errorMessage
+        } finally {
+            # Close the dialog regardless of whether the call to SendTestNotification succeeded or failed
+            $dialog.Close()
+        }
+    })
+    $stackPanel.Children.Add($button)
+
+    $dialog.Content = $stackPanel
+    $dialog.ShowDialog() | Out-Null
+}
+
+# SendTestNotification: Sends a test FCM notification to a device using the credentials provided by the user in the dialog box | Calls the UpdateResponseTextBox function
+function SendTestNotification($serverKey, $userID, $deviceToken) {
+    # Clear the GUI before sending the output
+    ClearDisplay
+
+    # Define the FCM API endpoint and headers
+    $FCMEndpoint = "https://fcm.googleapis.com/fcm/send"
+    $FCMHeaders = @{
+        "Authorization" = "Bearer $serverKey"
+        "Content-Type" = "application/json"
+        "project_id" = $userID
+    }
+
+    # Get Server/Client name and local IP address
+    $ServerName = $env:COMPUTERNAME
+    $localIP = Get-NetIPConfiguration | Where-Object {$null -ne $_.IPv4DefaultGateway} | Select-Object -ExpandProperty IPv4Address | Select-Object -ExpandProperty IPAddress
+    
+    # Define the current date and time
+    $CurrentDateTime = Get-Date -Format "yyyy-MM-dd HH:mm:ss"
+
+    # Define the notification payload
+    $NotificationPayload = @{
+        notification = @{
+            title = "FCM test from PowerShell"
+            body = "$CurrentDateTime`nFrom: $ServerName`nIP: $LocalIP"
+        }
+        to = $deviceToken
+    }
+
+    # Convert the payload to JSON
+    $NotificationPayloadJSON = $NotificationPayload | ConvertTo-Json
+
+    try {
+        # Send the FCM request and get the response
+        $FCMResponse = Invoke-RestMethod -Uri $FCMEndpoint -Method Post -Headers $FCMHeaders -Body $NotificationPayloadJSON -ErrorAction Stop
+
+        # Parse the response data
+        $timestamp = Get-Date -Format "yyyy-MM-dd HH:mm:ss"
+        $responseCode = $FCMResponse.success
+        $jsonResponse = $FCMResponse | ConvertTo-Json -Depth 10
+        $currentResponse = "Timestamp: $timestamp`r`nResponse code: $responseCode`r`n`r`nResponse body:`r`n$jsonResponse"
+
+        # Update the response text box, response code text block, and status bar
+        if ($null -ne $Window) {
+            $ResponseTextBox.Dispatcher.Invoke([action]{
+                $ResponseTextBox.Text += "`r`n`r`n$currentResponse"
+            }, "Normal")
+            $ResponseCodeTextBlock.Dispatcher.Invoke([action]{
+                $ResponseCodeTextBlock.Text = $responseCode
+            }, "Normal")
+            $StatusBarTextBlock.Dispatcher.Invoke([action]{
+                $StatusBarTextBlock.Text = "FCM test notification sent successfully."
+            }, "Normal")
+        }
+    } catch {
+        # Handle any exceptions that occur during the FCM request
+        $timestamp = Get-Date -Format "yyyy-MM-dd HH:mm:ss"
+        $errorMessage = "Error sending FCM request: $($_.Exception.Message)"
+        $currentResponse = "Timestamp: $timestamp`r`nError: $errorMessage"
+
+        # Update the response text box and status bar
+        if ($null -ne $Window) {
+            $ResponseTextBox.Dispatcher.Invoke([action]{
+                $ResponseTextBox.Text += "`r`n`r`n$currentResponse"
+            }, "Normal")
+            $StatusBarTextBlock.Dispatcher.Invoke([action]{
+                $StatusBarTextBlock.Text = $errorMessage
+            }, "Normal")
+        }
+    }
+}
+
+# UpdateResponseTextBox: Updates the responsetextbox with the current response | Called by the SendTestNotification function
+function UpdateResponseTextBox($currentResponse, $responseCode, $statusMessage) {
+    if ($null -ne $Window -and $Window.IsVisible) {
+        if ($null -eq $ResponseTextBox) {
+            Write-Output "ResponseTextBox is null"
+            return
+        }
+        
+        $ResponseTextBox.Dispatcher.Invoke([action]{
+            # Clear the ResponseTextBox before appending the new response
+            $ResponseTextBox.Text = ""
+            $ResponseTextBox.Text += "`r`n`r`n$currentResponse"
+        }, "Normal")
+    }
+}
+
+
+# Section 6
+function OnPortTestingMenuItemClick {
+    $portTestingWindow = New-Object System.Windows.Window
+    $portTestingWindow.Title = "Test TCP Port"
+    $portTestingWindow.Width = 500
+    $portTestingWindow.Height = 200
+    $portTestingWindow.WindowStartupLocation = "CenterScreen"
+    
+    $stackPanel = New-Object System.Windows.Controls.StackPanel
+    $stackPanel.Orientation = "Vertical"
+    $stackPanel.Margin = "10"
+    
+    $grid = New-Object System.Windows.Controls.Grid
+    $grid.Margin = "0,0,0,10"
+    
+    $urlTextBox = New-Object System.Windows.Controls.TextBox
+    $urlTextBox.Margin = "0,0,10,0"
+    $urlTextBox.HorizontalAlignment = "Stretch"
+    $urlTextBox.VerticalAlignment = "Center"
+    $urlTextBox.Text = "Enter URL or IP address"
+    $urlTextBox.Add_GotFocus({
+        if ($urlTextBox.Text -eq "Enter URL or IP address") {
+            $urlTextBox.Clear()
+        }
+    })
+    $grid.Children.Add($urlTextBox)
+    
+    $portTextBox = New-Object System.Windows.Controls.TextBox
+    $portTextBox.Margin = "0,0,0,0"
+    $portTextBox.HorizontalAlignment = "Right"
+    $portTextBox.VerticalAlignment = "Center"
+    $portTextBox.Width = 60
+    $portTextBox.Text = "TCP Port"
+    $portTextBox.Add_GotFocus({
+        if ($portTextBox.Text -eq "TCP Port") {
+            $portTextBox.Clear()
+        }
+    })
+    $grid.Children.Add($portTextBox)
+    
+    $stackPanel.Children.Add($grid)
+    
+    $sendButton = New-Object System.Windows.Controls.Button
+    $sendButton.Content = "Send Test Connection"
+    $sendButton.Margin = "0,10,0,0"
+    $sendButton.HorizontalAlignment = "Center"
+    $sendButton.VerticalAlignment = "Center"
+    $sendButton.Add_Click({
+        SendPortTesting $urlTextBox.Text ([int]$portTextBox.Text) $ResponseTextBox $StatusBarTextBlock $portTestingWindow
+    })
+    $stackPanel.Children.Add($sendButton)
+    
+    $portTestingWindow.Content = $stackPanel
+    $portTestingWindow.ShowDialog() | Out-Null
+}
+function SendPortTesting($url, $port, $ResponseTextBox, $StatusBarTextBlock, $portTestingWindow) {
+    $tcpClient = New-Object System.Net.Sockets.TcpClient
+    $connectTask = $tcpClient.ConnectAsync($url, $port)
+    $completed = $connectTask.Wait(1000) 
+    
+    if ($completed) {
+        $tcpClient.Close()
+        $response = "TCP port " + $port + " is open on: "+$url+""
+    } else {
+        $response = "TCP Port " + $port + " is closed on: "+$url+""
+    }
+    
+    $ResponseTextBox.Text = $response
+    $StatusBarTextBlock.Text = "TCP port test tcompleted."
+    $portTestingWindow.Close()
+}
+
+
+
+# Section 7
+# Throws an error indicating that the response data is invalid.
+function ThrowInvalidResponseDataError {
+    # Call the DisplayErrorMessage function to display an error message.
+    DisplayErrorMessage "Invalid response data"
+}
+# Throws an error indicating that an error occurred while making a request to the server.
+function ThrowRequestError ($response) {
+    # Extract the response code and status description from the $response object.
+    $responseCode = $response.StatusCode
+    $statusDescription = $response.StatusDescription
+    
+    # Construct an error message using the response code and status description.
+    $errorMessage = "Error occurred while requesting data. Response code: $responseCode. Status description: $statusDescription"
+    
+    # Call the DisplayErrorMessage function to display the error message.
+    DisplayErrorMessage $errorMessage
+}
+# Throws an error with a custom error message.
+function ThrowError ($message) {
+    # Call the DisplayErrorMessage function with the provided $message string to display the error message.
+    DisplayErrorMessage $message
+}
+# Throws an error indicating that a timeout occurred while connecting to a WebSocket server.
+function ThrowTimeoutError {
+    # Call the DisplayErrorMessage function with a message indicating that a timeout occurred.
+    DisplayErrorMessage "Timeout occurred while connecting to WebSocket server"
+}
+# Throws an error indicating that an error occurred while connecting to the server.
+function ThrowNetworkConnectionError ($message) {
+    # Construct an error message using the provided $message string.
+    $errorMessage = "Error occurred while connecting to server: " + $message
+    
+    # Call the DisplayErrorMessage function with the constructed error message to display the error message.
+    DisplayErrorMessage $errorMessage
+}
+# Throws an error indicating that an error occurred while making a request to the server.
+function ThrowServerRequestError ($response) {
+    # Extract the response code from the $response object.
+    $responseCode = $response.StatusCode
+    
+    # Construct an error message based on the response code.
+    if ($responseCode -eq 500) {
+        # If the response code is 500, indicate that an internal server error occurred.
+        $errorMessage = "Internal Server Error"
+    } elseif ($responseCode -ge 400 -and $responseCode -lt 600) {
+        # If the response code is between 400 and 599 (inclusive), indicate that the server returned an error.
+        $errorMessage = "Server returned an error. Response code: $responseCode. Status description: $($response.StatusDescription)"
+    } else {
+        # Otherwise, indicate that an error occurred while requesting data and include the status description from the $response object.
+        $errorMessage = "Error occurred while requesting data: " + $response.StatusDescription
+    }
+    
+    # Call the DisplayErrorMessage function with the constructed error message to display the error message.
+    DisplayErrorMessage $errorMessage
+}
+# Throws an error indicating that an error occurred while connecting to a WebSocket server.
+function ThrowWebSocketConnectionError ($message) {
+    # Construct an error message using the provided $message string.
+    $errorMessage = "Error occurred while connecting to WebSocket server: " + $message
+    
+    # Call the DisplayErrorMessage function with the constructed error message to display the error message.
+    DisplayErrorMessage $errorMessage
+}
+# Throws an error indicating that an invalid WebSocket message was received.
+function ThrowInvalidWebSocketMessageError {
+    # Construct an error message indicating that an invalid WebSocket message was received.
+    $errorMessage = "Invalid WebSocket message received"
+    
+    # Call the DisplayErrorMessage function with the constructed error message to display the error message.
+    DisplayErrorMessage $errorMessage
+}
+# Throws an error indicating that an error occurred while processing a WebSocket message.
+function ThrowWebSocketProcessingError ($errorMessage) {
+    # Construct an error message using the provided $errorMessage string.
+    $errorMessage = "Error occurred while processing WebSocket message: " + $errorMessage
+    
+    # Call the DisplayErrorMessage function with the constructed error message to display the error message.
+    DisplayErrorMessage $errorMessage
+}
+
 
 # Show Window
 $Window.ShowDialog() | Out-Null
