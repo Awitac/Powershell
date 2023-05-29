@@ -1,0 +1,46 @@
+function Send-FCMNotification {
+    # Define the FCM API endpoint
+    $fcmEndpoint = "https://fcm.googleapis.com/v1/projects/eliasazurefcm/messages:send"
+
+    # Define the notification payload
+    $notification = @{
+        "message" = @{
+            "token" = "fbhy302PSGaoIe1MRjOIjg:APA91bGI-fgRylT_qjoppUM64SZkoFmpAcCNqyjMo_ZVb8z3pAATDpkrgvrwkcXL_oIgi3KoIrfnm8wLiVVHy4ZyLRnkBY3okMmCYGMMKaU992KcqVsT-_6FBNqINNCFRBg8CUOOXZw_"
+            "notification" = @{
+                "title" = "FCM Test Notification"
+                "body" = "This is a test notification from FCM"
+            }
+        }
+    }
+
+    # Convert the notification payload to JSON
+    $payload = $notification | ConvertTo-Json
+
+    # Set the request headers
+    $headers = @{
+        "Authorization" = "Bearer $fcmAccessToken"
+        "Content-Type"  = "application/json"
+    }
+
+    try {
+        # Send the POST request to the FCM API endpoint
+        $response = Invoke-RestMethod -Uri $fcmEndpoint -Method Post -Headers $headers -Body $payload -ErrorAction Stop
+
+        # Check the response status code
+        if ($response.StatusCode -eq 200) {
+            Write-Output "Notification sent successfully!"
+        }
+        else {
+            Write-Output "Failed to send notification. Status code: $($response.StatusCode)"
+        }
+    }
+    catch {
+        Write-Output "Failed to send notification. Error: $($_.Exception.Message)"
+    }
+}
+
+# Replace <FCM_ACCESS_TOKEN> with your actual FCM access token
+$fcmAccessToken = "ya29.c.b0Aaekm1IwAykCL0njF8TbQE96KFoF51dJIgA4sdAgjHxcL4tHCJmMQ5-2_5KJh9VIfPmNoEYLKGKh2d76kC6OoGuUnoxF5DIhyhUkJ7n0fe0wqbXaxJWOzNofSDqhGd0U8f4G1Vb7nskVm5dTkd9I_NgQIM60imCY0WRonxx4ZbA0mJGWxqmFN6JSTxnhje-7k5acnjDnByqO3mhjFCO6Fh_2F11BAEoyEyvHfN67ymSzfyB5rooHjRNfUnxRZpRtx1tUH1JhVtUGzM69FCJCE788btNfYCw8E9-K3kamsYS5xWy_ypYJZ_2QbYXTTCOnyrpYC4KekvgT340C8JfaOmOwaaih470nQxhBeeIi1z2rmb6wxdhWVmhYZ3iB3quQavjvd4c0WjWBqgRMjxJRUWnw5JkO1kYwb4OZxS8Ui9krtohWgyqXnze2-3cv0qrsWOa-98uYsi1sSU3Q_0O30cq3qVpmtmmv99jB_F1JmxrVmnfRsQj5BWZWYnXB1oaW4J1bJcQpv5ze6kd2Osi-xn6hOOiJQk-IeMOIksl45hWwbkqj4591669MiUJkFxV58WypsFOOYZ8putlU5YMXp_eye7mmnhn4Vl9kVrFnI-x_zhJ9eyf4VnQUm-oV-bUzpvan7rlhXQOrpjWRRnUprx8zZ6m-83526SpO5Fv3sieW-fSrdvw0mZjSB4lJS0YmOezXVe2hVsBpvZsc3SiU28BIyxreIYdV_8qn-llkpd9rvm9t4iW7rjOmZYUkX5rRgtF3dSVRukM5n_Bb9b0yjcrUpvnkd3Z4soXru9SrFU8wMUwXS1oxp6aJvjufSba1B27-cqFtcoiiqZe5h0Ip-OmeYVioYuXUxnxyjlqIa01I0xirM1vUJ66QOffu8lJts5Mo-lZXbRJ7rOhv5V1bS1tYRReQ4y6im_1x9Z-UwqMkcphp--oXprxRXadjyIYrx-iyqW80an2riO0F4smZyI1W_3mdV-sMiRiJtSwsm73VX6tBlXgunQp"
+
+# Call the function to send the FCM notification
+Send-FCMNotification -fcmAccessToken $fcmAccessToken
