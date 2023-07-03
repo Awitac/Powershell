@@ -1,0 +1,62 @@
+$configurationFile = "C:\udp_config.json"
+
+$loadFileChoice = Read-Host -Prompt "Do you want to load the JSON configuration file? (Y/N)"
+
+if ($loadFileChoice -eq "Y" -and (Test-Path $configurationFile)) {
+    $configuration = Get-Content $configurationFile | ConvertFrom-Json
+    $savedConfigurations = $configuration.Configurations
+
+    if ($savedConfigurations.Count -gt 0) {
+        Write-Host "Saved configurations:"
+        for ($i = 0; $i -lt $savedConfigurations.Count; $i++) {
+            $config = $savedConfigurations[$i]
+            Write-Host "$i. IP: $($config.IP), Port: $($config.Port)"
+        }
+
+        $selectedConfigIndex = Read-Host -Prompt "Enter the index of the configuration to use"
+        if ([int]::TryParse($selectedConfigIndex, [ref]$null) -and $selectedConfigIndex -ge 0 -and $selectedConfigIndex -lt $savedConfigurations.Count) {
+            $selectedConfig = $savedConfigurations[$selectedConfigIndex]
+            $destinationIP = $selectedConfig.IP
+            $destinationPort = $selectedConfig.Port
+        }
+        else {
+            Write-Host "Invalid configuration index selected. Exiting the script."
+            exit
+        }
+    }
+    else {
+        Write-Host "No saved configurations found. Exiting the script."
+        exit
+    }
+}
+else {
+    $destinationIP = Read-Host -Prompt "Enter the destination IP address"
+    $destinationPort = Read-Host -Prompt "Enter the destination UDP port"
+
+    $newConfiguration = @{
+        IP = $destinationIP
+        Port = $destinationPort
+    }
+
+    if ($configuration) {
+        $savedConfigurations = $configuration.Configurations + $newConfiguration
+    }
+    else {
+        $savedConfigurations = $newConfiguration
+    }
+}
+
+$udpClient = New-Object System.Net.Sockets.UdpClient
+$remoteEndpoint = New-Object System.Net.IPEndPoint([System.Net.IPAddress]::Parse($destinationIP), $destinationPort)
+
+$message = "Hello World"
+$timestamp = Get-Date -Format "yyyy-MM-dd HH:mm:ss"
+$sendBytes = [System.Text.Encoding]::ASCII.GetBytes("$message ($timestamp)")
+$udpClient.Send($sendBytes, $sendBytes.Length, $remoteEndpoint)
+$udpClient.Close()
+
+$updatedConfiguration = @{
+    Configurations = $savedConfigurations
+} | ConvertTo-Json
+
+$updatedConfiguration | Out-File -FilePath $configurationFile
