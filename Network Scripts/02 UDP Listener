@@ -1,0 +1,20 @@
+$port = Read-Host -Prompt "Enter the UDP port number to listen on"
+
+try {
+    $udpClient = New-Object System.Net.Sockets.UdpClient($port)
+    $endpoint = New-Object System.Net.IPEndPoint([System.Net.IPAddress]::Any, $port)
+
+    while ($true) {
+        $receivedBytes = $udpClient.Receive([ref]$endpoint)
+        $receivedMessage = [System.Text.Encoding]::ASCII.GetString($receivedBytes)
+
+        Write-Host "Received message:"
+        Write-Host "Message: $receivedMessage"
+        Write-Host "From: $($endpoint.Address):$($endpoint.Port)"
+    }
+}
+finally {
+    if ($udpClient) {
+        $udpClient.Close()
+    }
+}
