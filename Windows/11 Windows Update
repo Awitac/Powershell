@@ -1,0 +1,6 @@
+# Set variables for the task
+$TaskAction = New-ScheduledTaskAction -Execute 'Powershell.exe' -Argument 'C:\Path\To\Your\UpdateScript.ps1'
+$TaskTrigger = New-ScheduledTaskTrigger -Weekly -DaysOfWeek Saturday -Weeks 2 -At 3am
+
+# Register the scheduled task
+Register-ScheduledTask -Action $TaskAction -Trigger $TaskTrigger -TaskName "UpdateTask" -Description "Schedule Windows Update on second Saturday of every month"
